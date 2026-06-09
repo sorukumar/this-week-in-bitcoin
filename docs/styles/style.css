@@ -404,3 +404,52 @@ select {
         padding-top: 0.2rem;
     }
 }
+
+/* Fix Mobile Menu Overlay for TWIB */
+@media screen and (max-width: 768px) {
+    body.has-nav .nav-links-wrapper {
+        background-color: var(--bg-color) !important;
+        z-index: 9999 !important; /* Ensure it stays behind the top-bar so the close button is clickable */
+        justify-content: flex-start !important;
+        padding-top: calc(var(--header-height) + 2rem) !important;
+    }
+
+    .mobile-suite-content {
+        width: 100%;
+        text-align: center;
+    }
+
+    .mobile-suite-content > div {
+        border-top: 1px solid var(--text-color) !important;
+        margin-top: 0 !important;
+    }
+
+    .mobile-suite-content > div > div:first-child {
+        color: var(--text-color) !important;
+        font-family: var(--font-serif) !important;
+        font-weight: 800 !important;
+        text-transform: uppercase;
+        font-size: 1rem !important;
+        letter-spacing: 0.05em !important;
+        margin-bottom: 15px !important;
+        opacity: 0.8;
+    }
+
+    .mobile-suite-content .suite-link-mobile {
+        color: var(--text-color) !important;
+        font-family: var(--font-sans) !important;
+        font-size: 1.1rem !important;
+        padding: 12px 15px !important;
+        transition: all 0.2s ease !important;
+        justify-content: center !important;
+    }
+
+    .mobile-suite-content .suite-link-mobile:hover {
+        color: var(--accent-color-text) !important;
+        background-color: rgba(232, 145, 107, 0.1) !important;
+    }
+
+    .mobile-menu-btn {
+        color: var(--text-color) !important;
+    }
+}
