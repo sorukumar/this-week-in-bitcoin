@@ -1,0 +1,406 @@
+:root {
+    --bg-color: #F1F2DC;
+    /* Newspaper / Warm yellow */
+    --text-color: #1A1D24;
+    /* Deep Charcoal / Navy */
+    --accent-color: #E8916B;
+    /* Soft Terracotta */
+    --accent-color-text: #D17B55;
+    /* Darker Terracotta for text contrast */
+    --border-color: rgba(26, 29, 36, 0.25);
+    --font-serif: 'Newsreader', Georgia, serif;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-serif);
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+}
+
+/* Typography for Logo */
+.app-logo a {
+    font-family: var(--font-serif) !important;
+    font-weight: 800 !important;
+    font-size: 1.7rem !important;
+    letter-spacing: -1px !important;
+    color: var(--text-color) !important;
+    text-transform: uppercase;
+}
+
+/* Page Container */
+.container {
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 2rem;
+    padding-top: 1rem;
+    /* Reduced for tight print layout */
+}
+
+/* Newspaper Header Styles */
+.utility-bar {
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 3px double var(--text-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+    margin-top: 0;
+}
+
+.utility-left,
+.utility-archive {
+    flex: 1;
+}
+
+.utility-center {
+    flex: 2;
+    text-align: center;
+}
+
+.utility-archive {
+    text-align: right;
+}
+
+.utility-archive select {
+    margin-left: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-style: italic;
+    color: var(--text-color);
+    outline: none;
+    cursor: pointer;
+}
+
+.utility-archive select:hover {
+    text-decoration: underline;
+}
+
+header h1 {
+    font-family: var(--font-serif);
+    font-size: 3.8rem;
+    text-align: center;
+    margin: 0;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--text-color);
+    padding-bottom: 0.5rem;
+}
+
+
+/* Pulse / Stats Bar */
+.pulse-bar {
+    border-bottom: 1px solid var(--text-color);
+    padding: 1.2rem 0;
+    margin-top: 0.5rem;
+    display: flex;
+    justify-content: space-around;
+    font-family: var(--font-sans);
+    margin-bottom: 1.5rem;
+    text-align: center;
+    background-color: transparent;
+}
+
+.pulse-stat {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    border-right: 1px solid var(--border-color);
+}
+.pulse-stat:last-child {
+    border-right: none;
+}
+
+.pulse-number {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: var(--accent-color-text);
+    font-family: var(--font-serif);
+}
+
+.pulse-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    color: var(--text-color);
+    opacity: 0.8;
+}
+
+/* Content Sections */
+h2 {
+    font-family: var(--font-sans);
+    font-size: 1.5rem;
+    border-top: 3px double var(--text-color);
+    border-bottom: 1px solid var(--text-color);
+    padding-top: 0.8rem;
+    padding-bottom: 0.4rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+h3 {
+    font-family: var(--font-sans);
+    font-size: 1.2rem;
+    color: var(--text-color);
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+ul.tldr-list {
+    font-size: 1.15rem;
+    padding-left: 1.5rem;
+    margin-bottom: 3rem;
+    column-count: 1;
+    column-gap: 2rem;
+    list-style-position: inside;
+}
+
+@media (min-width: 600px) {
+    ul.tldr-list {
+        column-count: 2;
+    }
+}
+
+ul.tldr-list li {
+    margin-bottom: 0.8rem;
+    break-inside: avoid;
+}
+
+ul.tldr-list li:first-child {
+    list-style-type: none;
+}
+
+.drop-cap {
+    float: left;
+    font-size: 4.5rem;
+    line-height: 0.7;
+    padding-right: 0.5rem;
+    padding-top: 0.35rem;
+    font-family: var(--font-serif);
+    font-weight: 800;
+    color: var(--text-color);
+}
+
+.pr-item {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--text-color);
+}
+
+.pr-item:last-child {
+    border-bottom: none;
+}
+
+.pr-title {
+    font-weight: 600;
+    font-size: 1.15rem;
+    line-height: 1.4;
+}
+
+.pr-meta {
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    color: #4a4a4a;
+    margin-bottom: 0.3rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.pr-meta a {
+    color: var(--accent-color-text);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.pr-meta a:hover {
+    text-decoration: underline;
+}
+
+.pr-summary {
+    font-size: 1.05rem;
+    color: #2c2c2c;
+    margin-top: 0.5rem;
+}
+
+/* Links */
+a {
+    color: var(--accent-color-text);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    text-decoration: underline;
+    color: var(--text-color);
+}
+
+.shoutout-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    background: rgba(232, 145, 107, 0.1);
+    padding: 1rem;
+    border-left: 3px solid var(--accent-color);
+}
+
+.header-icon {
+    color: var(--accent-color-text);
+    margin-right: 0.5rem;
+    opacity: 0.9;
+}
+
+.archive-section {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--text-color);
+    text-align: center;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+}
+
+select {
+    padding: 0.5rem 1rem;
+    padding-right: 2rem;
+    font-family: var(--font-sans);
+    border: 1px solid var(--border-color);
+    background: #fff url('data:image/svg+xml;utf8,<svg fill="%231A1D24" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 0.5rem center;
+    background-size: 1.2rem;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 4px;
+    color: var(--text-color);
+    cursor: pointer;
+    margin-left: 0.5rem;
+    font-weight: 500;
+}
+
+/* Override App Components Header to match body */
+#header .app-header-main,
+#header .top-bar {
+    background: var(--bg-color) !important;
+}
+
+#header .app-header-main {
+    border-bottom: 2px solid var(--text-color) !important;
+}
+
+.bdl-suite-details summary {
+    background: transparent !important;
+    border: none !important;
+    color: var(--accent-color-text) !important;
+    transition: all 0.2s ease;
+}
+
+.bdl-suite-details summary:hover {
+    background: rgba(232, 145, 107, 0.1) !important;
+}
+
+/* Remove default blue focus ring and use Terracotta */
+.bdl-suite-details summary:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 2px var(--bg-color), 0 0 0 4px var(--accent-color-text) !important;
+}
+
+/* Style the dropdown menu box to match the newspaper theme */
+.bdl-suite-details > *:not(summary) {
+    background-color: var(--bg-color) !important;
+    border: 1px solid var(--text-color) !important;
+    border-radius: 0 !important; /* Sharper edges for newspaper feel */
+    box-shadow: 4px 4px 0px rgba(26, 29, 36, 0.1) !important;
+}
+
+/* Style the links inside the dropdown */
+.bdl-suite-details a {
+    color: var(--text-color) !important;
+    transition: all 0.2s ease !important;
+}
+
+.bdl-suite-details a:hover {
+    color: var(--accent-color-text) !important;
+    background-color: rgba(232, 145, 107, 0.1) !important;
+}
+
+/* Override App Components Footer to match body */
+#footer footer,
+#footer .footer {
+    background: var(--bg-color) !important;
+    color: var(--text-color) !important;
+    border-top: 2px solid var(--text-color) !important;
+}
+
+#footer footer p,
+#footer footer a,
+#footer .footer p,
+#footer .footer a {
+    color: var(--text-color) !important;
+}
+
+#footer footer a:hover,
+#footer .footer a:hover {
+    text-decoration: underline !important;
+}
+
+/* Responsive Mobile Layout */
+@media (max-width: 600px) {
+    .container {
+        padding: 1.5rem 1rem;
+    }
+    
+    header h1 {
+        font-size: clamp(2rem, 10vw, 3.8rem);
+    }
+    
+    .utility-bar {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .utility-left, .utility-center, .utility-archive {
+        text-align: center;
+        width: 100%;
+    }
+    
+    .pulse-bar {
+        flex-wrap: wrap;
+        padding: 1.5rem 0;
+        gap: 1.5rem 0;
+    }
+    
+    .pulse-stat {
+        flex: 1 1 45%;
+        border-right: none;
+    }
+    
+    /* Keep the vertical divider only for the first item in each row to create a 2x2 grid */
+    .pulse-stat:nth-child(odd) {
+        border-right: 1px solid var(--border-color);
+    }
+    
+    .drop-cap {
+        font-size: 3.5rem;
+        padding-top: 0.2rem;
+    }
+}

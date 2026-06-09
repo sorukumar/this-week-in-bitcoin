@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>This Week in Bitcoin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400;0,6..72,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Bitcoin Data Labs Shell Styles -->
+    <link rel="stylesheet" href="https://bitcoindatalabs.org/styles/styles.css">
+    
+    <!-- Modularized Local Styles -->
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+<body class="has-fixed-header">
+
+    <!-- Bitcoin Data Labs Header -->
+    <div id="header"></div>
+
+    <div class="container">
+        <div class="utility-bar">
+            <span class="utility-left">Weekly Digest</span>
+            <span id="header-date" class="utility-center">Loading...</span>
+            <span class="utility-archive">
+                <select id="archive-select-dropdown" onchange="fetchNewsletter(this.value)">
+                    <option value="data/latest.json">Latest Edition</option>
+                </select>
+            </span>
+        </div>
+
+        <header>
+            <h1>This Week in Bitcoin</h1>
+        </header>
+
+        <main id="content">
+            <p style="text-align: center; font-family: var(--font-sans);">Loading the latest edition...</p>
+        </main>
+
+
+    </div>
+
+    <!-- Bitcoin Data Labs Footer -->
+    <div id="footer"></div>
+
+    <!-- Bitcoin Data Labs App Components -->
+    <script src="https://bitcoindatalabs.org/components/app-components.js"></script>
+    <script src="js/app-config.js"></script>
+
+    <script>
+        async function loadArchiveIndex() {
+            try {
+                const response = await fetch('data/archive_index.json');
+                if (response.ok) {
+                    const archives = await response.json();
+                    const select = document.getElementById('archive-select-dropdown');
+                    
+                    // Clear existing options except latest
+                    select.innerHTML = '<option value="data/latest.json">Latest Edition</option>';
+                    
+                    archives.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = `data/${item.file}`;
+                        option.textContent = item.date;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (e) {
+                console.warn('No archive index found yet.');
+            }
+        }
+
+        async function fetchNewsletter(url = 'data/latest.json') {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Could not fetch data');
+                const data = await response.json();
+                renderNewsletter(data);
+            } catch (error) {
+                document.getElementById('content').innerHTML = `<p style="text-align: center; color: var(--accent-color);">Failed to load newsletter data. Error: ${error.message}</p>`;
+            }
+        }
+
+        function formatUser(userObj) {
+            if (typeof userObj === 'string') {
+                return `<a href="https://github.com/${userObj}" target="_blank">@${userObj}</a>`;
+            }
+            const username = userObj.username;
+            const uuid = userObj.uuid;
+            if (uuid) {
+                return `<a href="https://sorukumar.github.io/orange-dev-network/profile.html?uuid=${uuid}" target="_blank">@${username}</a>`;
+            }
+            return `<a href="https://github.com/${username}" target="_blank">@${username}</a>`;
+        }
+
+        function formatSectionHeader(text) {
+            // Strip emojis from the text
+            const cleanText = text.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '').trim();
+            
+            // Map text to FontAwesome icons
+            let iconClass = 'fa-solid fa-hashtag'; // default
+            const lowerText = cleanText.toLowerCase();
+            
+            if (lowerText.includes('build') || lowerText.includes('testing')) iconClass = 'fa-solid fa-screwdriver-wrench';
+            else if (lowerText.includes('p2p') || lowerText.includes('network')) iconClass = 'fa-solid fa-bolt';
+            else if (lowerText.includes('gui')) iconClass = 'fa-solid fa-desktop';
+            else if (lowerText.includes('consensus') || lowerText.includes('crypto')) iconClass = 'fa-solid fa-shield-halved';
+            else if (lowerText.includes('misc') || lowerText.includes('other')) iconClass = 'fa-solid fa-layer-group';
+            else if (lowerText.includes('first-time')) iconClass = 'fa-solid fa-user-plus';
+            else if (lowerText.includes('authors')) iconClass = 'fa-solid fa-medal';
+            else if (lowerText.includes('reviewers')) iconClass = 'fa-solid fa-trophy';
+
+            return `<i class="${iconClass} header-icon"></i> ${cleanText}`;
+        }
+
+        function renderNewsletter(data) {
+            const content = document.getElementById('content');
+            document.getElementById('header-date').textContent = `${data.start_date} — ${data.end_date}`;
+
+            let html = `
+                <div class="pulse-bar">
+                    <div class="pulse-stat">
+                        <span class="pulse-number">${data.stats.total_merged}</span>
+                        <span class="pulse-label">PRs Merged</span>
+                    </div>
+                    <div class="pulse-stat">
+                        <span class="pulse-number">${data.stats.total_reviews}</span>
+                        <span class="pulse-label">Review Events</span>
+                    </div>
+                    <div class="pulse-stat">
+                        <span class="pulse-number">${data.stats.new_contributors}</span>
+                        <span class="pulse-label">New Devs</span>
+                    </div>
+                    <div class="pulse-stat">
+                        <span class="pulse-number">${data.stats.total_threads}</span>
+                        <span class="pulse-label">Discussions</span>
+                    </div>
+                </div>
+            `;
+
+            // TL;DR
+            if (data.tldr && data.tldr.length > 0) {
+                html += `<h2>The TL;DR</h2><ul class="tldr-list">`;
+                data.tldr.forEach((point, index) => {
+                    // Clean leading markdown list characters (* or -) and trim whitespace
+                    let cleanPoint = point.replace(/^[\*\-]\s+/, '').trim();
+                    
+                    if (index === 0) {
+                        // Apply drop cap to the first actual letter of the first point
+                        const firstChar = cleanPoint.charAt(0);
+                        const restOfPoint = cleanPoint.slice(1);
+                        html += `<li><span class="drop-cap">${firstChar}</span>${restOfPoint}</li>`;
+                    } else {
+                        html += `<li>${cleanPoint}</li>`;
+                    }
+                });
+                html += `</ul>`;
+            }
+
+            // Merged PRs
+            if (data.categories.merged.length > 0) {
+                html += `<h2>Core Code: Merged This Week</h2>`;
+                data.categories.merged.forEach(cat => {
+                    html += `<h3>${formatSectionHeader(cat.name)}</h3>`;
+                    cat.prs.forEach(pr => {
+                        html += `
+                            <div class="pr-item">
+                                <div class="pr-meta">
+                                    <a href="https://github.com/bitcoin/bitcoin/pull/${pr.number}" target="_blank">#${pr.number}</a>
+                                    by ${formatUser(pr.author)}
+                                </div>
+                                <div class="pr-title">${pr.title}</div>
+                                ${pr.summary ? `<div class="pr-summary">${pr.summary}</div>` : ''}
+                            </div>
+                        `;
+                    });
+                });
+            }
+
+            // Hot PRs
+            if (data.categories.hot.length > 0) {
+                html += `<h2>Under Review (Hot PRs)</h2>`;
+                data.categories.hot.forEach(cat => {
+                    html += `<h3>${formatSectionHeader(cat.name)}</h3>`;
+                    cat.prs.forEach(pr => {
+                        html += `
+                            <div class="pr-item">
+                                <div class="pr-title">
+                                    <a href="https://github.com/bitcoin/bitcoin/pull/${pr.number}" target="_blank">#${pr.number}</a>
+                                    ${pr.title}
+                                </div>
+                                <div class="pr-meta">${pr.event_count} review events</div>
+                            </div>
+                        `;
+                    });
+                });
+            }
+
+            // Discussions
+            if (data.discussions.length > 0) {
+                html += `<h2>Research & Governance</h2>`;
+                data.discussions.forEach(thread => {
+                    html += `
+                        <div class="pr-item">
+                            <div class="pr-meta"><strong>${thread.source}</strong> · ${thread.message_count} messages</div>
+                            <div class="pr-title"><a href="${thread.link}" target="_blank">${thread.subject}</a></div>
+                            ${thread.summary ? `<div class="pr-summary">${thread.summary}</div>` : ''}
+                        </div>
+                    `;
+                });
+            }
+
+            // Shoutouts
+            html += `<h2>Contributor Shoutouts</h2>`;
+            if (data.shoutouts.new_contributors.length > 0) {
+                html += `<h3>${formatSectionHeader('Welcome First-Time Contributors')}</h3><div class="shoutout-list">`;
+                data.shoutouts.new_contributors.forEach(u => {
+                    html += `<span>${formatUser(u)}</span>`;
+                });
+                html += `</div>`;
+            }
+
+            if (data.shoutouts.top_authors.length > 0) {
+                html += `<h3>${formatSectionHeader('Top Authors (Merged PRs)')}</h3><div class="shoutout-list">`;
+                data.shoutouts.top_authors.forEach(u => {
+                    html += `<span>${formatUser(u.user)} (${u.count})</span>`;
+                });
+                html += `</div>`;
+            }
+
+            if (data.shoutouts.top_reviewers.length > 0) {
+                html += `<h3>${formatSectionHeader('Top Reviewers')}</h3><div class="shoutout-list">`;
+                data.shoutouts.top_reviewers.forEach(u => {
+                    html += `<span>${formatUser(u.user)} (${u.count})</span>`;
+                });
+                html += `</div>`;
+            }
+
+            content.innerHTML = html;
+            window.scrollTo(0, 0); // Scroll to top when loading new edition
+        }
+
+        // Initialize
+        loadArchiveIndex();
+        fetchNewsletter();
+    </script>
+</body>
+</html>
