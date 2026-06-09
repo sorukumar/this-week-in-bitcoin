@@ -10,6 +10,11 @@
     --border-color: rgba(26, 29, 36, 0.25);
     --font-serif: 'Newsreader', Georgia, serif;
     --font-sans: 'Inter', -apple-system, sans-serif;
+    
+    /* Override BDL variables to prevent FOUC / white flash */
+    --bdl-header-bg: var(--bg-color);
+    --bdl-header-bg-compressed: var(--bg-color);
+    --bdl-subnav-bg: var(--bg-color);
 }
 
 body {
