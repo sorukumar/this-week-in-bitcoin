@@ -1,5 +1,6 @@
 import os
 import json
+import pandas as pd
 from google import genai
 from google.genai import types # type: ignore
 import time
