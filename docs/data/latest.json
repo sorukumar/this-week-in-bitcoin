@@ -342,7 +342,8 @@
             "number": 35179,
             "title": "test: Add importdescriptors rpc error coverage",
             "event_count": 18,
-            "summary": "Enhances the reliability of wallet integrations by ensuring RPC error paths for importing descriptors are thoroughly tested and predictable."
+            "summary": "Enhances the reliability of wallet integrations by ensuring RPC error paths for importing descriptors are thoroughly tested and predictable.",
+            "author": "polespinasa"
           }
         ]
       },
@@ -353,19 +354,22 @@
             "number": 35465,
             "title": "coins: compact chainstate regularly",
             "event_count": 17,
-            "summary": "Improves long-running node performance and reduces memory fragmentation by compacting the chainstate database continuously during normal operation."
+            "summary": "Improves long-running node performance and reduces memory fragmentation by compacting the chainstate database continuously during normal operation.",
+            "author": "l0rinc"
           },
           {
             "number": 35482,
             "title": "fuzz: exercise the transaction-handling path in process_message",
             "event_count": 16,
-            "summary": "Hardens node security against malformed network data by expanding fuzz testing directly into the P2P transaction processing logic."
+            "summary": "Hardens node security against malformed network data by expanding fuzz testing directly into the P2P transaction processing logic.",
+            "author": "HowHsu"
           },
           {
             "number": 32427,
             "title": "kernel: Replace leveldb-based BlockTreeDB with WAL and .dat file based store",
             "event_count": 14,
-            "summary": "Substantially improves block database robustness and speed by migrating away from LevelDB toward a custom Write-Ahead Log design."
+            "summary": "Substantially improves block database robustness and speed by migrating away from LevelDB toward a custom Write-Ahead Log design.",
+            "author": "sedited"
           }
         ]
       },
@@ -376,7 +380,8 @@
             "number": 35405,
             "title": "wallet: switch default optinrbf from true to false",
             "event_count": 12,
-            "summary": "Prioritizes a conservative default posture for user wallets by disabling automatic Opt-In RBF (Replace-By-Fee) unless explicitly requested."
+            "summary": "Prioritizes a conservative default posture for user wallets by disabling automatic Opt-In RBF (Replace-By-Fee) unless explicitly requested.",
+            "author": "rkrux"
           }
         ]
       }
