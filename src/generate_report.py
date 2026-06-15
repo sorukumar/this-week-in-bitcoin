@@ -227,6 +227,7 @@ def generate_newsletter_data(weekly_data):
             cat_data["prs"].append({
                 "number": pr['pr_number'],
                 "title": pr['title'],
+                "author": pr.get('author_obj') or pr.get('author'),
                 "event_count": pr['event_count']
             })
         newsletter_data["categories"]["hot"].append(cat_data)
@@ -237,6 +238,7 @@ def generate_newsletter_data(weekly_data):
         newsletter_data["discussions"].append({
             "source": thread['source'].title().replace('_', ' '),
             "subject": thread['subject'],
+            "author": thread.get('author'),
             "link": thread['link'],
             "message_count": thread['message_count'],
             "summary": summary

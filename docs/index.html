@@ -220,7 +220,6 @@
                                 <div class="pr-meta">
                                     <a href="https://github.com/bitcoin/bitcoin/pull/${pr.number}" target="_blank">#${pr.number}</a>
                                     by ${formatUser(pr.author)}
-                                    ${pr.importance ? `<span style="margin-left: 8px;">• ${pr.importance} review comments</span>` : ''}
                                 </div>
                                 <div class="pr-title">${pr.title}</div>
                                 ${pr.summary ? `<div class="pr-summary">${pr.summary}</div>` : ''}
@@ -250,11 +249,12 @@
                     cat.prs.forEach(pr => {
                         html += `
                             <div class="pr-item">
-                                <div class="pr-title">
+                                <div class="pr-meta">
                                     <a href="https://github.com/bitcoin/bitcoin/pull/${pr.number}" target="_blank">#${pr.number}</a>
-                                    ${pr.title}
+                                    ${pr.author ? `by ${formatUser(pr.author)}` : ''}
+                                    <span style="margin-left: 8px;">• ${pr.event_count} review comments</span>
                                 </div>
-                                <div class="pr-meta">${pr.event_count} review comments</div>
+                                <div class="pr-title">${pr.title}</div>
                                 ${pr.summary ? `<div class="pr-summary">${pr.summary}</div>` : ''}
                             </div>
                         `;
@@ -268,7 +268,11 @@
                 data.discussions.forEach(thread => {
                     html += `
                         <div class="pr-item">
-                            <div class="pr-meta"><strong>${thread.source}</strong> · ${thread.message_count} messages</div>
+                            <div class="pr-meta">
+                                <strong>${thread.source}</strong> 
+                                ${thread.author ? `· by ${formatUser(thread.author)}` : ''} 
+                                · ${thread.message_count} messages
+                            </div>
                             <div class="pr-title"><a href="${thread.link}" target="_blank">${thread.subject}</a></div>
                             ${thread.summary ? `<div class="pr-summary">${thread.summary}</div>` : ''}
                         </div>

@@ -393,14 +393,16 @@
       "subject": "Re: Public key recovery for EC leaves in P2MR (BIP-360)",
       "link": "https://delvingbitcoin.org/t/public-key-recovery-for-ec-leaves-in-p2mr-bip-360/2603/16",
       "message_count": 10,
-      "summary": "Explores technical optimizations in the proposed Pay-to-Merkle-Root protocol to allow smaller transaction sizes by recovering public keys directly from cryptographic leaves."
+      "summary": "Explores technical optimizations in the proposed Pay-to-Merkle-Root protocol to allow smaller transaction sizes by recovering public keys directly from cryptographic leaves.",
+      "author": "Pieter Wuille"
     },
     {
       "source": "Delving",
       "subject": "Re: A Bitcoin-native LLM: dataset, architecture and open questions",
       "link": "https://delvingbitcoin.org/t/a-bitcoin-native-llm-dataset-architecture-and-open-questions/2550/12",
       "message_count": 6,
-      "summary": "Analyzes the feasibility, data requirements, and architectural considerations for creating a specialized LLM trained explicitly to assist with Bitcoin Core development and research."
+      "summary": "Analyzes the feasibility, data requirements, and architectural considerations for creating a specialized LLM trained explicitly to assist with Bitcoin Core development and research.",
+      "author": "sudocarlos"
     }
   ],
   "shoutouts": {

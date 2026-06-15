@@ -150,9 +150,13 @@ def get_weekly_activity(days_back=7):
         
         total_threads = len(recent_social.groupby(['source', 'subject']))
 
+        # Sort by date so 'first' gives us the original poster (or earliest in the window)
+        recent_social = recent_social.sort_values(by='date')
+
         thread_agg = recent_social.groupby(['source', 'subject']).agg(
             message_count=('message_id', 'count'),
-            link=('link', 'first')
+            link=('link', 'first'),
+            author=('author_name', 'first')
         ).reset_index()
         
         thread_agg = thread_agg.sort_values(by='message_count', ascending=False).head(5)
