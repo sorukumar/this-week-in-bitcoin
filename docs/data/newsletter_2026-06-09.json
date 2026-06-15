@@ -3,7 +3,7 @@
   "end_date": "2026-06-09",
   "stats": {
     "total_merged": 13,
-    "total_reviews": 725,
+    "total_reviews": 483,
     "total_threads": 36,
     "new_contributors": 0
   },
@@ -168,22 +168,22 @@
           {
             "number": 32427,
             "title": "kernel: Replace leveldb-based BlockTreeDB with flat-file based store",
-            "event_count": 27
+            "event_count": 16
           },
           {
             "number": 33540,
             "title": "argsman, cli: GNU-style command-line option parsing (allows options after non-option arguments)",
-            "event_count": 25
+            "event_count": 10
           },
           {
             "number": 35465,
             "title": "validation: compact chainstate after IBD and post-IBD flushes",
-            "event_count": 23
+            "event_count": 11
           },
           {
             "number": 35295,
             "title": "validation: fetch block input prevouts in parallel during ConnectBlock",
-            "event_count": 23
+            "event_count": 11
           }
         ]
       },
@@ -193,7 +193,7 @@
           {
             "number": 34683,
             "title": "rpc: support a formal description of our JSON-RPC interface",
-            "event_count": 27
+            "event_count": 4
           }
         ]
       }
