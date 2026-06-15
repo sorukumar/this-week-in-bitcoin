@@ -21,9 +21,10 @@ def main():
     os.makedirs("archive", exist_ok=True)
     
     # Save the report as JSON for the web
-    end_date = weekly_data['end_date']
+    # We use today_str (which is now Sunday's date) to brand all files
+    today_str = (pd.Timestamp.now(tz='UTC') - pd.Timedelta(days=1)).strftime('%Y-%m-%d')
     os.makedirs("docs/data", exist_ok=True)
-    json_filename = f"docs/data/newsletter_{end_date}.json"
+    json_filename = f"docs/data/newsletter_{today_str}.json"
     latest_json = "docs/data/latest.json"
     archive_index_file = "docs/data/archive_index.json"
     
@@ -43,7 +44,7 @@ def main():
                 pass
                 
     # Add if not exists
-    entry = {"date": end_date, "file": f"newsletter_{end_date}.json"}
+    entry = {"date": today_str, "file": f"newsletter_{today_str}.json"}
     if entry not in archive_index:
         archive_index.insert(0, entry) # Insert at beginning so newest is first
         
@@ -57,7 +58,7 @@ def main():
     
     # Generate the Markdown file from the JSON
     from src.build_markdown import build_markdown_from_json
-    md_filename = f"archive/newsletter_{end_date}.md"
+    md_filename = f"archive/newsletter_{today_str}.md"
     markdown_report = build_markdown_from_json(newsletter_data)
     with open(md_filename, "w") as f:
         f.write(markdown_report)

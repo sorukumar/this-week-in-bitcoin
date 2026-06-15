@@ -176,10 +176,15 @@ def generate_newsletter_data(weekly_data):
             if cleaned_line:
                 tldr_cleaned.append(cleaned_line)
 
+    # The script runs on Monday morning, but the report conceptually covers the week ending on Sunday.
+    # We subtract 1 day to brand the report with Sunday's date.
+    report_date_obj = pd.Timestamp.now(tz='UTC') - pd.Timedelta(days=1)
+    today_str = report_date_obj.strftime('%Y-%m-%d')
+    
     # Build the JSON data structure
     newsletter_data = {
-        "start_date": start_date,
-        "end_date": end_date,
+        "start_date": start_date.strftime('%Y-%m-%d') if isinstance(start_date, pd.Timestamp) else start_date,
+        "end_date": report_date_obj.strftime('%Y-%m-%d'),
         "stats": {
             "total_merged": total_merged,
             "total_reviews": total_reviews,
