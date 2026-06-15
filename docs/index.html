@@ -220,7 +220,7 @@
                                 <div class="pr-meta">
                                     <a href="https://github.com/bitcoin/bitcoin/pull/${pr.number}" target="_blank">#${pr.number}</a>
                                     by ${formatUser(pr.author)}
-                                    ${pr.importance ? `<span style="margin-left: 8px; color: #ff7f50;"><i class="fa-solid fa-fire"></i> ${pr.importance} review comments</span>` : ''}
+                                    ${pr.importance ? `<span style="margin-left: 8px;">• ${pr.importance} review comments</span>` : ''}
                                 </div>
                                 <div class="pr-title">${pr.title}</div>
                                 ${pr.summary ? `<div class="pr-summary">${pr.summary}</div>` : ''}
