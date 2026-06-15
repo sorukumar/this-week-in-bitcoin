@@ -35,11 +35,22 @@ def get_weekly_activity(days_back=7):
     top_authors = []
     new_contributors = []
     
+    # Read reviews early to calculate importance
+    try:
+        reviews_df = pd.read_parquet("../orange-dev-data/data/enriched/enriched_reviews.parquet")
+        reviews_df['timestamp'] = pd.to_datetime(reviews_df['timestamp'], utc=True, errors='coerce')
+        # Filter out passive GitHub events (like 'subscribed', 'labeled') to only count genuine interactions
+        if 'event_type' in reviews_df.columns:
+            reviews_df = reviews_df[reviews_df['event_type'].isin(['commented', 'reviewed'])]
+    except Exception as e:
+        print(f"Error reading reviews: {e}")
+        reviews_df = pd.DataFrame()
+
     # 1. Fetch enriched PRs
     try:
         pr_df = pd.read_parquet("../orange-dev-data/data/enriched/enriched_prs.parquet")
         pr_df['merged_at'] = pd.to_datetime(pr_df['merged_at'], utc=True, errors='coerce')
-        merged_prs = pr_df[pr_df['merged_at'].notna()].copy()
+        merged_prs = pr_df[(pr_df['merged_at'].notna()) & (pr_df['merged_at'] >= start_date) & (pr_df['merged_at'] <= end_date)].copy()
         total_merged = len(merged_prs)
         
         # Calculate top authors
@@ -62,10 +73,18 @@ def get_weekly_activity(days_back=7):
         
         new_contributors = [{"username": row['author'], "uuid": safe_uuid(row['uuid'])} for _, row in new_contribs_df.iterrows() if 'bot' not in str(row['author']).lower()]
 
-        merged_prs = merged_prs.sort_values(by='merged_at', ascending=False).head(15)
+        # Calculate importance (all-time review events)
+        if not reviews_df.empty:
+            all_time_pr_counts = reviews_df.groupby('pr_number').size().reset_index(name='importance')
+            merged_prs = pd.merge(merged_prs, all_time_pr_counts, on='pr_number', how='left')
+            merged_prs['importance'] = merged_prs['importance'].fillna(0).astype(int)
+        else:
+            merged_prs['importance'] = 0
+
+        merged_prs = merged_prs.sort_values(by=['importance', 'merged_at'], ascending=[False, False])
         merged_prs['category'] = merged_prs['labels'].apply(get_category_from_labels)
         
-        pr_data = merged_prs[['pr_number', 'title', 'author', 'uuid', 'merged_at', 'category']].copy()
+        pr_data = merged_prs[['pr_number', 'title', 'author', 'uuid', 'merged_at', 'category', 'importance']].copy()
         pr_data['merged_at'] = pr_data['merged_at'].dt.strftime('%Y-%m-%d')
         
         categorized_prs = {}
@@ -85,8 +104,8 @@ def get_weekly_activity(days_back=7):
 
     # 2. Fetch Hot PRs
     try:
-        reviews_df = pd.read_parquet("../orange-dev-data/data/enriched/enriched_reviews.parquet")
-        reviews_df['timestamp'] = pd.to_datetime(reviews_df['timestamp'], utc=True, errors='coerce')
+        if reviews_df.empty:
+            raise ValueError("reviews_df is empty")
         
         recent_reviews = reviews_df[(reviews_df['timestamp'] >= start_date) & (reviews_df['timestamp'] <= end_date)].copy()
         total_reviews = len(recent_reviews)

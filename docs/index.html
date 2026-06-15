@@ -109,6 +109,16 @@
             return `<a href="https://github.com/${username}" target="_blank">@${username}</a>`;
         }
 
+        function togglePrs() {
+            const btn = document.getElementById('toggle-prs-btn');
+            const isHidden = document.querySelector('.hidden-pr').style.display === 'none';
+            
+            document.querySelectorAll('.hidden-pr').forEach(el => el.style.display = isHidden ? 'block' : 'none');
+            document.querySelectorAll('.hidden-category').forEach(el => el.style.display = isHidden ? 'block' : 'none');
+            
+            btn.innerText = isHidden ? 'Show Less' : `Show ${btn.dataset.count} More PRs`;
+        }
+
         function formatSectionHeader(text) {
             // Strip emojis from the text
             const cleanText = text.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '').trim();
@@ -137,19 +147,19 @@
                 <div class="pulse-bar">
                     <div class="pulse-stat">
                         <span class="pulse-number">${data.stats.total_merged}</span>
-                        <span class="pulse-label">PRs Merged</span>
+                        <span class="pulse-label">Merged PRs</span>
                     </div>
                     <div class="pulse-stat">
                         <span class="pulse-number">${data.stats.total_reviews}</span>
-                        <span class="pulse-label">Review Events</span>
+                        <span class="pulse-label">Review Comments</span>
                     </div>
                     <div class="pulse-stat">
                         <span class="pulse-number">${data.stats.new_contributors}</span>
-                        <span class="pulse-label">New Devs</span>
+                        <span class="pulse-label">New Contributors</span>
                     </div>
                     <div class="pulse-stat">
                         <span class="pulse-number">${data.stats.total_threads}</span>
-                        <span class="pulse-label">Discussions</span>
+                        <span class="pulse-label">Active Threads</span>
                     </div>
                 </div>
             `;
@@ -158,8 +168,10 @@
             if (data.tldr && data.tldr.length > 0) {
                 html += `<h2>The TL;DR</h2><ul class="tldr-list">`;
                 data.tldr.forEach((point, index) => {
-                    // Clean leading markdown list characters (* or -) and trim whitespace
-                    let cleanPoint = point.replace(/^[\*\-]\s+/, '').trim();
+                    // Clean leading markdown list characters (* or - or digits) and trim whitespace
+                    let cleanPoint = point.replace(/^[\*\-\•]+\s*/, '').replace(/^\d+\.\s*/, '').trim();
+                    // Strip any stray ** that the python script left behind
+                    cleanPoint = cleanPoint.replace(/\*\*/g, '');
                     
                     if (index === 0) {
                         // Apply drop cap to the first actual letter of the first point
@@ -176,21 +188,58 @@
             // Merged PRs
             if (data.categories.merged.length > 0) {
                 html += `<h2>Core Code: Merged This Week</h2>`;
+                
+                // Flatten all merged PRs to determine global top 10 by importance
+                let allMergedPrs = [];
                 data.categories.merged.forEach(cat => {
-                    html += `<h3>${formatSectionHeader(cat.name)}</h3>`;
                     cat.prs.forEach(pr => {
-                        html += `
-                            <div class="pr-item">
+                        allMergedPrs.push(pr);
+                    });
+                });
+                
+                allMergedPrs.sort((a, b) => (b.importance || 0) - (a.importance || 0));
+                const top10PrNumbers = new Set(allMergedPrs.slice(0, 10).map(pr => pr.number));
+                let hiddenCount = 0;
+                
+                data.categories.merged.forEach(cat => {
+                    let catHtml = `<h3>${formatSectionHeader(cat.name)}</h3>`;
+                    let hasVisible = false;
+                    let hasHidden = false;
+                    
+                    cat.prs.forEach(pr => {
+                        const isTop10 = top10PrNumbers.has(pr.number);
+                        if (!isTop10) {
+                            hiddenCount++;
+                            hasHidden = true;
+                        } else {
+                            hasVisible = true;
+                        }
+                        
+                        catHtml += `
+                            <div class="pr-item ${isTop10 ? '' : 'hidden-pr'}" style="${isTop10 ? '' : 'display: none;'}">
                                 <div class="pr-meta">
                                     <a href="https://github.com/bitcoin/bitcoin/pull/${pr.number}" target="_blank">#${pr.number}</a>
                                     by ${formatUser(pr.author)}
+                                    ${pr.importance ? `<span style="margin-left: 8px; color: #ff7f50;"><i class="fa-solid fa-fire"></i> ${pr.importance} review comments</span>` : ''}
                                 </div>
                                 <div class="pr-title">${pr.title}</div>
                                 ${pr.summary ? `<div class="pr-summary">${pr.summary}</div>` : ''}
                             </div>
                         `;
                     });
+                    
+                    if (hasVisible || hasHidden) {
+                        html += `<div class="category-block ${hasVisible ? '' : 'hidden-category'}" style="${hasVisible ? '' : 'display: none;'}">` + catHtml + `</div>`;
+                    }
                 });
+                
+                if (hiddenCount > 0) {
+                    html += `
+                        <div style="text-align: center; margin-top: 20px;">
+                            <button id="toggle-prs-btn" data-count="${hiddenCount}" style="padding: 10px 20px; background-color: var(--accent-color); color: white; border: none; border-radius: 4px; cursor: pointer; font-family: var(--font-sans); font-weight: 600;" onclick="togglePrs()">Show ${hiddenCount} More PRs</button>
+                        </div>
+                    `;
+                }
             }
 
             // Hot PRs
@@ -205,7 +254,8 @@
                                     <a href="https://github.com/bitcoin/bitcoin/pull/${pr.number}" target="_blank">#${pr.number}</a>
                                     ${pr.title}
                                 </div>
-                                <div class="pr-meta">${pr.event_count} review events</div>
+                                <div class="pr-meta">${pr.event_count} review comments</div>
+                                ${pr.summary ? `<div class="pr-summary">${pr.summary}</div>` : ''}
                             </div>
                         `;
                     });

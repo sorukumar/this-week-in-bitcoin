@@ -209,7 +209,8 @@ def generate_newsletter_data(weekly_data):
                 "number": pr['pr_number'],
                 "title": pr['title'],
                 "author": pr['author_obj'],
-                "summary": summary
+                "summary": summary,
+                "importance": pr.get("importance", 0)
             })
         newsletter_data["categories"]["merged"].append(cat_data)
 

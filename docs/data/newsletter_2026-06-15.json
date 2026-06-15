@@ -388,14 +388,14 @@
       "subject": "Re: Public key recovery for EC leaves in P2MR (BIP-360)",
       "link": "https://delvingbitcoin.org/t/public-key-recovery-for-ec-leaves-in-p2mr-bip-360/2603/16",
       "message_count": 10,
-      "summary": "This thread discusses the implications and methods for public key recovery specifically for elliptic curve keys within a P2MR (Pay-to-Multi-Recovery) script structure proposed by BIP-360, exploring how this feature could enhance script functionality or efficiency."
+      "summary": ""
     },
     {
       "source": "Delving",
       "subject": "Re: A Bitcoin-native LLM: dataset, architecture and open questions",
       "link": "https://delvingbitcoin.org/t/a-bitcoin-native-llm-dataset-architecture-and-open-questions/2550/12",
       "message_count": 6,
-      "summary": "This thread explores the concept of creating a 'Bitcoin-native' Large Language Model (LLM), focusing on potential datasets for training, suitable architectural designs, and various open questions regarding its development and utility within the Bitcoin ecosystem."
+      "summary": ""
     }
   ],
   "shoutouts": {
