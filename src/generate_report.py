@@ -33,7 +33,7 @@ def get_bulk_llm_summaries(client, items_dict, instruction):
     prompt = f"""You are a Bitcoin Core developer writing a newsletter.
 {instruction}
 
-You MUST return a valid JSON object where the keys are exactly the keys provided, and the values are the summaries. Do NOT wrap in markdown blocks, just raw JSON.
+You MUST return a valid JSON object where the keys are exactly the keys provided, and the values are objects containing two keys: "public_summary" and "technical_summary". Do NOT wrap in markdown blocks, just raw JSON.
 
 Input Data:
 {json.dumps(items_dict, indent=2)}
@@ -97,6 +97,22 @@ PRs to categorize:
 def format_user(username):
     return f"[@{username}](https://github.com/{username})"
 
+def load_cache():
+    cache_path = "docs/data/pr_summaries_cache.json"
+    if os.path.exists(cache_path):
+        with open(cache_path, "r") as f:
+            try:
+                return json.load(f)
+            except json.JSONDecodeError:
+                return {}
+    return {}
+
+def save_cache(cache):
+    cache_path = "docs/data/pr_summaries_cache.json"
+    os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+    with open(cache_path, "w") as f:
+        json.dump(cache, f, indent=2)
+
 def generate_newsletter_data(weekly_data):
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
@@ -145,28 +161,45 @@ def generate_newsletter_data(weekly_data):
     # Get TLDR
     tldr_summary = get_llm_summary(client, tldr_input, "Write 2 bullet points summarizing the most important technical shift or discussion from these events.")
 
-    # Get bulk summaries for PRs (Focus on impact)
-    pr_items_to_summarize = {}
+    # Load the summary cache
+    cache = load_cache()
+
+    # Gather all items to summarize
+    items_to_summarize = {}
+    
+    # 1. Merged PRs
     for cat, prs in categorized_merged.items():
         for pr in prs:
-            pr_items_to_summarize[f"pr_{pr['pr_number']}"] = pr['title']
+            key = f"pr_{pr['pr_number']}"
+            if key not in cache:
+                items_to_summarize[key] = f"Merged PR #{pr['pr_number']}: {pr['title']}"
 
-    pr_summaries = get_bulk_llm_summaries(
-        client, 
-        pr_items_to_summarize, 
-        "For each PR, write exactly 1 short sentence explaining its impact or why it matters to Bitcoin node operators, developers, the broader community, or the overall health of the Bitcoin network."
-    )
+    # 2. Hot PRs
+    for cat, prs in categorized_hot.items():
+        for pr in prs:
+            key = f"pr_{pr['pr_number']}"
+            if key not in cache:
+                items_to_summarize[key] = f"Hot PR #{pr['pr_number']} under review: {pr['title']}"
 
-    # Get bulk summaries for Top 2 Social Threads (Focus on debate)
+    # 3. Research & Governance Threads
     top_2_threads = active_threads[:2]
-    thread_items = {f"thread_{t['subject'][:20]}": t['subject'] for t in top_2_threads}
-    thread_summaries = get_bulk_llm_summaries(
-        client,
-        thread_items,
-        "For each discussion thread, write 1-2 sentences summarizing the core debate, arguments, or proposed solution."
-    )
-    
-    summaries = {**pr_summaries, **thread_summaries}
+    for thread in top_2_threads:
+        key = f"thread_{thread['subject'][:20]}"
+        if key not in cache:
+            items_to_summarize[key] = f"Discussion Thread: {thread['subject']}"
+
+    # Generate missing summaries and update cache
+    if items_to_summarize:
+        instruction = """For each item, generate two summaries:
+1. "public_summary": Exactly 1-2 short lines accessible to the general public. Explain exactly what is being done, and focus on the value and benefit of the work rather than just technical details.
+2. "technical_summary": A detailed 4-5 line summary explaining the technical implementation, architectural value, and exactly what needs to be done."""
+        
+        new_summaries = get_bulk_llm_summaries(client, items_to_summarize, instruction)
+        for k, v in new_summaries.items():
+            cache[k] = v
+        save_cache(cache)
+        
+    summaries = cache
 
     # Clean markdown list syntax from TLDR before saving
     tldr_cleaned = []
@@ -210,12 +243,13 @@ def generate_newsletter_data(weekly_data):
     for category, prs in categorized_merged.items():
         cat_data = {"name": category, "prs": []}
         for pr in prs:
-            summary = summaries.get(f"pr_{pr['pr_number']}", "")
+            summary_obj = summaries.get(f"pr_{pr['pr_number']}", {})
+            public_summary = summary_obj.get("public_summary", "") if isinstance(summary_obj, dict) else summary_obj
             cat_data["prs"].append({
                 "number": pr['pr_number'],
                 "title": pr['title'],
                 "author": pr['author_obj'],
-                "summary": summary,
+                "summary": public_summary,
                 "importance": pr.get("importance", 0)
             })
         newsletter_data["categories"]["merged"].append(cat_data)
@@ -224,24 +258,28 @@ def generate_newsletter_data(weekly_data):
     for category, prs in categorized_hot.items():
         cat_data = {"name": category, "prs": []}
         for pr in prs:
+            summary_obj = summaries.get(f"pr_{pr['pr_number']}", {})
+            public_summary = summary_obj.get("public_summary", "") if isinstance(summary_obj, dict) else summary_obj
             cat_data["prs"].append({
                 "number": pr['pr_number'],
                 "title": pr['title'],
                 "author": pr.get('author_obj') or pr.get('author'),
-                "event_count": pr['event_count']
+                "event_count": pr['event_count'],
+                "summary": public_summary
             })
         newsletter_data["categories"]["hot"].append(cat_data)
 
     # Research & Governance
     for thread in top_2_threads:
-        summary = summaries.get(f"thread_{thread['subject'][:20]}", "")
+        summary_obj = summaries.get(f"thread_{thread['subject'][:20]}", {})
+        public_summary = summary_obj.get("public_summary", "") if isinstance(summary_obj, dict) else summary_obj
         newsletter_data["discussions"].append({
             "source": thread['source'].title().replace('_', ' '),
             "subject": thread['subject'],
             "author": thread.get('author'),
             "link": thread['link'],
             "message_count": thread['message_count'],
-            "summary": summary
+            "summary": public_summary
         })
 
     return newsletter_data
