@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from src.fetch_data import get_weekly_activity
 from src.generate_report import generate_newsletter_data
 import json
+import pandas as pd
 
 def main():
     # Load environment variables from .env
