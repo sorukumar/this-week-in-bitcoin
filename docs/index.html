@@ -28,6 +28,52 @@
     
     <!-- Modularized Local Styles -->
     <link rel="stylesheet" href="styles/style.css">
+    <style>
+        .pr-item.has-tech {
+            cursor: pointer;
+            position: relative;
+            transition: background-color 0.2s ease;
+        }
+        .pr-item.has-tech:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        .expand-icon {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #888;
+            font-size: 0.8em;
+            transition: transform 0.2s ease;
+        }
+        .pr-item.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+        .pr-technical-summary {
+            display: none;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            font-family: var(--font-sans, 'Inter', sans-serif);
+            font-size: 0.9em;
+            color: #555;
+            line-height: 1.6;
+        }
+        html[data-theme="dark"] .pr-item.has-tech:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+        html[data-theme="dark"] .pr-technical-summary {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: #bbb;
+        }
+        .pr-item.expanded .pr-technical-summary {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 <body class="has-fixed-header">
 
@@ -215,14 +261,17 @@
                             hasVisible = true;
                         }
                         
+                        const hasTech = pr.technical_summary && pr.technical_summary.length > 0;
                         catHtml += `
-                            <div class="pr-item ${isTop10 ? '' : 'hidden-pr'}" style="${isTop10 ? '' : 'display: none;'}">
+                            <div class="pr-item ${isTop10 ? '' : 'hidden-pr'} ${hasTech ? 'has-tech' : ''}" style="${isTop10 ? '' : 'display: none;'}" ${hasTech ? `onclick="if(event.target.tagName !== 'A' && event.target.closest('a') === null) this.classList.toggle('expanded')"` : ''}>
+                                ${hasTech ? `<i class="fa-solid fa-chevron-down expand-icon"></i>` : ''}
                                 <div class="pr-meta">
                                     <a href="https://github.com/bitcoin/bitcoin/pull/${pr.number}" target="_blank">#${pr.number}</a>
                                     by ${formatUser(pr.author)}
                                 </div>
                                 <div class="pr-title">${pr.title}</div>
                                 ${pr.summary ? `<div class="pr-summary">${pr.summary}</div>` : ''}
+                                ${hasTech ? `<div class="pr-technical-summary">${pr.technical_summary}</div>` : ''}
                             </div>
                         `;
                     });
@@ -247,8 +296,10 @@
                 data.categories.hot.forEach(cat => {
                     html += `<h3>${formatSectionHeader(cat.name)}</h3>`;
                     cat.prs.forEach(pr => {
+                        const hasTech = pr.technical_summary && pr.technical_summary.length > 0;
                         html += `
-                            <div class="pr-item">
+                            <div class="pr-item ${hasTech ? 'has-tech' : ''}" ${hasTech ? `onclick="if(event.target.tagName !== 'A' && event.target.closest('a') === null) this.classList.toggle('expanded')"` : ''}>
+                                ${hasTech ? `<i class="fa-solid fa-chevron-down expand-icon"></i>` : ''}
                                 <div class="pr-meta">
                                     <a href="https://github.com/bitcoin/bitcoin/pull/${pr.number}" target="_blank">#${pr.number}</a>
                                     ${pr.author ? `by ${formatUser(pr.author)}` : ''}
@@ -256,6 +307,7 @@
                                 </div>
                                 <div class="pr-title">${pr.title}</div>
                                 ${pr.summary ? `<div class="pr-summary">${pr.summary}</div>` : ''}
+                                ${hasTech ? `<div class="pr-technical-summary">${pr.technical_summary}</div>` : ''}
                             </div>
                         `;
                     });
@@ -266,8 +318,10 @@
             if (data.discussions.length > 0) {
                 html += `<h2>Research & Governance</h2>`;
                 data.discussions.forEach(thread => {
+                    const hasTech = thread.technical_summary && thread.technical_summary.length > 0;
                     html += `
-                        <div class="pr-item">
+                        <div class="pr-item ${hasTech ? 'has-tech' : ''}" ${hasTech ? `onclick="if(event.target.tagName !== 'A' && event.target.closest('a') === null) this.classList.toggle('expanded')"` : ''}>
+                            ${hasTech ? `<i class="fa-solid fa-chevron-down expand-icon"></i>` : ''}
                             <div class="pr-meta">
                                 <strong>${thread.source}</strong> 
                                 ${thread.author ? `· by ${formatUser(thread.author)}` : ''} 
@@ -275,6 +329,7 @@
                             </div>
                             <div class="pr-title"><a href="${thread.link}" target="_blank">${thread.subject}</a></div>
                             ${thread.summary ? `<div class="pr-summary">${thread.summary}</div>` : ''}
+                            ${hasTech ? `<div class="pr-technical-summary">${thread.technical_summary}</div>` : ''}
                         </div>
                     `;
                 });

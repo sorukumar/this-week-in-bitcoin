@@ -245,11 +245,13 @@ def generate_newsletter_data(weekly_data):
         for pr in prs:
             summary_obj = summaries.get(f"pr_{pr['pr_number']}", {})
             public_summary = summary_obj.get("public_summary", "") if isinstance(summary_obj, dict) else summary_obj
+            technical_summary = summary_obj.get("technical_summary", "") if isinstance(summary_obj, dict) else ""
             cat_data["prs"].append({
                 "number": pr['pr_number'],
                 "title": pr['title'],
                 "author": pr['author_obj'],
                 "summary": public_summary,
+                "technical_summary": technical_summary,
                 "importance": pr.get("importance", 0)
             })
         newsletter_data["categories"]["merged"].append(cat_data)
@@ -260,12 +262,14 @@ def generate_newsletter_data(weekly_data):
         for pr in prs:
             summary_obj = summaries.get(f"pr_{pr['pr_number']}", {})
             public_summary = summary_obj.get("public_summary", "") if isinstance(summary_obj, dict) else summary_obj
+            technical_summary = summary_obj.get("technical_summary", "") if isinstance(summary_obj, dict) else ""
             cat_data["prs"].append({
                 "number": pr['pr_number'],
                 "title": pr['title'],
                 "author": pr.get('author_obj') or pr.get('author'),
                 "event_count": pr['event_count'],
-                "summary": public_summary
+                "summary": public_summary,
+                "technical_summary": technical_summary
             })
         newsletter_data["categories"]["hot"].append(cat_data)
 
@@ -273,13 +277,15 @@ def generate_newsletter_data(weekly_data):
     for thread in top_2_threads:
         summary_obj = summaries.get(f"thread_{thread['subject'][:20]}", {})
         public_summary = summary_obj.get("public_summary", "") if isinstance(summary_obj, dict) else summary_obj
+        technical_summary = summary_obj.get("technical_summary", "") if isinstance(summary_obj, dict) else ""
         newsletter_data["discussions"].append({
             "source": thread['source'].title().replace('_', ' '),
             "subject": thread['subject'],
             "author": thread.get('author'),
             "link": thread['link'],
             "message_count": thread['message_count'],
-            "summary": public_summary
+            "summary": public_summary,
+            "technical_summary": technical_summary
         })
 
     return newsletter_data
