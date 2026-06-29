@@ -1,5 +1,12 @@
 .env
 __pycache__/
-output/
+.DS_Store
+docs/output/
 *.pyc
 .venv/
+
+
+
+
+.DS_Store
+docs/output

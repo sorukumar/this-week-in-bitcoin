@@ -120,19 +120,24 @@
     <script src="js/app-config.js"></script>
 
     <script>
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const DATA_BASE = isLocal
+            ? 'output/twib/data/'
+            : 'https://raw.githubusercontent.com/sorukumar/orange-dev-data/main/output/twib/data/';
+
         async function loadArchiveIndex() {
             try {
-                const response = await fetch('data/archive_index.json');
+                const response = await fetch(DATA_BASE + 'archive_index.json');
                 if (response.ok) {
                     const archives = await response.json();
                     const select = document.getElementById('archive-select-dropdown');
                     
                     // Clear existing options except latest
-                    select.innerHTML = '<option value="data/latest.json">Latest Edition</option>';
+                    select.innerHTML = '<option value="' + DATA_BASE + 'latest.json">Latest Edition</option>';
                     
                     archives.forEach(item => {
                         const option = document.createElement('option');
-                        option.value = `data/${item.file}`;
+                        option.value = DATA_BASE + item.file;
                         option.textContent = item.date;
                         select.appendChild(option);
                     });
@@ -142,7 +147,8 @@
             }
         }
 
-        async function fetchNewsletter(url = 'data/latest.json') {
+        async function fetchNewsletter(url) {
+            if (!url) url = DATA_BASE + 'latest.json';
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('Could not fetch data');
