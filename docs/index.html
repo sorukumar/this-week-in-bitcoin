@@ -1,31 +1,36 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>This Week in Bitcoin</title>
-    
+
     <!-- Open Graph Meta Tags -->
     <meta property="og:title" content="This Week in Bitcoin">
-    <meta property="og:description" content="A weekly digest of the latest merged PRs, discussions, and updates in Bitcoin development.">
+    <meta property="og:description"
+        content="A weekly digest of the latest merged PRs, discussions, and updates in Bitcoin development.">
     <meta property="og:image" content="https://sorukumar.github.io/this-week-in-bitcoin/images/og-image.png">
     <meta property="og:url" content="https://sorukumar.github.io/this-week-in-bitcoin/">
     <meta property="og:type" content="website">
-    
+
     <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="This Week in Bitcoin">
-    <meta name="twitter:description" content="A weekly digest of the latest merged PRs, discussions, and updates in Bitcoin development.">
+    <meta name="twitter:description"
+        content="A weekly digest of the latest merged PRs, discussions, and updates in Bitcoin development.">
     <meta name="twitter:image" content="https://sorukumar.github.io/this-week-in-bitcoin/images/og-image.png">
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400;0,6..72,800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400;0,6..72,800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Bitcoin Data Labs Shell Styles -->
     <link rel="stylesheet" href="https://bitcoindatalabs.org/styles/styles.css">
-    
+
     <!-- Modularized Local Styles -->
     <link rel="stylesheet" href="styles/style.css">
     <style>
@@ -34,9 +39,11 @@
             position: relative;
             transition: background-color 0.2s ease;
         }
+
         .pr-item.has-tech:hover {
             background-color: rgba(0, 0, 0, 0.02);
         }
+
         .expand-icon {
             position: absolute;
             top: 20px;
@@ -45,46 +52,60 @@
             font-size: 0.8em;
             transition: transform 0.2s ease;
         }
+
         .pr-item.expanded .expand-icon {
             transform: rotate(180deg);
         }
+
         .pr-technical-summary {
             display: none;
             margin-top: 15px;
             padding: 15px 20px;
             background-color: rgba(0, 0, 0, 0.02);
-            background-image: 
+            background-image:
                 linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
             background-size: 20px 20px;
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
             border-radius: 6px;
             font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
             font-size: 0.85em;
             color: #333;
             line-height: 1.6;
         }
+
         html[data-theme="dark"] .pr-item.has-tech:hover {
             background-color: rgba(255, 255, 255, 0.03);
         }
+
         html[data-theme="dark"] .pr-technical-summary {
             background-color: rgba(255, 255, 255, 0.02);
-            background-image: 
+            background-image:
                 linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            border: 1px solid rgba(255,255,255,0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             color: #bbb;
         }
+
         .pr-item.expanded .pr-technical-summary {
             display: block;
             animation: fadeIn 0.3s ease;
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
+
 <body class="has-fixed-header">
 
     <!-- Bitcoin Data Labs Header -->
@@ -131,10 +152,10 @@
                 if (response.ok) {
                     const archives = await response.json();
                     const select = document.getElementById('archive-select-dropdown');
-                    
+
                     // Clear existing options except latest
                     select.innerHTML = '<option value="' + DATA_BASE + 'latest.json">Latest Edition</option>';
-                    
+
                     archives.forEach(item => {
                         const option = document.createElement('option');
                         option.value = DATA_BASE + item.file;
@@ -174,21 +195,21 @@
         function togglePrs() {
             const btn = document.getElementById('toggle-prs-btn');
             const isHidden = document.querySelector('.hidden-pr').style.display === 'none';
-            
+
             document.querySelectorAll('.hidden-pr').forEach(el => el.style.display = isHidden ? 'block' : 'none');
             document.querySelectorAll('.hidden-category').forEach(el => el.style.display = isHidden ? 'block' : 'none');
-            
+
             btn.innerText = isHidden ? 'Show Less' : `Show ${btn.dataset.count} More PRs`;
         }
 
         function formatSectionHeader(text) {
             // Strip emojis from the text
             const cleanText = text.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '').trim();
-            
+
             // Map text to FontAwesome icons
             let iconClass = 'fa-solid fa-hashtag'; // default
             const lowerText = cleanText.toLowerCase();
-            
+
             if (lowerText.includes('build') || lowerText.includes('testing')) iconClass = 'fa-solid fa-screwdriver-wrench';
             else if (lowerText.includes('p2p') || lowerText.includes('network')) iconClass = 'fa-solid fa-bolt';
             else if (lowerText.includes('gui')) iconClass = 'fa-solid fa-desktop';
@@ -234,7 +255,7 @@
                     let cleanPoint = point.replace(/^[\*\-\•]+\s*/, '').replace(/^\d+\.\s*/, '').trim();
                     // Strip any stray ** that the python script left behind
                     cleanPoint = cleanPoint.replace(/\*\*/g, '');
-                    
+
                     if (index === 0) {
                         // Apply drop cap to the first actual letter of the first point
                         const firstChar = cleanPoint.charAt(0);
@@ -250,7 +271,7 @@
             // Merged PRs
             if (data.categories.merged.length > 0) {
                 html += `<h2>Core Code: Merged This Week</h2>`;
-                
+
                 // Flatten all merged PRs to determine global top 10 by importance
                 let allMergedPrs = [];
                 data.categories.merged.forEach(cat => {
@@ -258,16 +279,16 @@
                         allMergedPrs.push(pr);
                     });
                 });
-                
+
                 allMergedPrs.sort((a, b) => (b.importance || 0) - (a.importance || 0));
                 const top10PrNumbers = new Set(allMergedPrs.slice(0, 10).map(pr => pr.number));
                 let hiddenCount = 0;
-                
+
                 data.categories.merged.forEach(cat => {
                     let catHtml = `<h3>${formatSectionHeader(cat.name)}</h3>`;
                     let hasVisible = false;
                     let hasHidden = false;
-                    
+
                     cat.prs.forEach(pr => {
                         const isTop10 = top10PrNumbers.has(pr.number);
                         if (!isTop10) {
@@ -276,7 +297,7 @@
                         } else {
                             hasVisible = true;
                         }
-                        
+
                         const hasTech = pr.technical_summary && pr.technical_summary.length > 0;
                         catHtml += `
                             <div class="pr-item ${isTop10 ? '' : 'hidden-pr'} ${hasTech ? 'has-tech' : ''}" style="${isTop10 ? '' : 'display: none;'}" ${hasTech ? `onclick="if(event.target.tagName !== 'A' && event.target.closest('a') === null) this.classList.toggle('expanded')"` : ''}>
@@ -291,12 +312,12 @@
                             </div>
                         `;
                     });
-                    
+
                     if (hasVisible || hasHidden) {
                         html += `<div class="category-block ${hasVisible ? '' : 'hidden-category'}" style="${hasVisible ? '' : 'display: none;'}">` + catHtml + `</div>`;
                     }
                 });
-                
+
                 if (hiddenCount > 0) {
                     html += `
                         <div style="text-align: center; margin-top: 20px;">
@@ -386,4 +407,5 @@
         fetchNewsletter();
     </script>
 </body>
+
 </html>
