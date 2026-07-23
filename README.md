@@ -1,6 +1,6 @@
 # 📰 This Week in Bitcoin (TWIB)
 
-**[Read the Latest Edition](https://sorukumar.github.io/this-week-in-bitcoin/)**
+**[Read the Latest Edition](https://twib.bitcoindatalabs.org/)**
 
 A curated, automated weekly executive summary tracking the pulse of the Bitcoin development ecosystem.
 

@@ -6,8 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
             appHomeUrl: 'index.html',
 
             suiteLinks: [
-                { name: 'orange-dev-tracker', url: 'https://sorukumar.github.io/orange-dev-tracker', icon: 'fas fa-chart-line' },
-                { name: 'orange-dev-network', url: 'https://sorukumar.github.io/orange-dev-network', icon: 'fas fa-project-diagram' }
+                { name: 'orange-dev-tracker', url: 'https://tracker.bitcoindatalabs.org', icon: 'fas fa-chart-line' },
+                { name: 'orange-dev-network', url: 'https://network.bitcoindatalabs.org', icon: 'fas fa-project-diagram' }
             ]
         });
 
