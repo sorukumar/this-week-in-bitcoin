@@ -180,14 +180,26 @@
             }
         }
 
-        function formatUser(userObj) {
+        function formatUser(userObj, source = null) {
             if (typeof userObj === 'string') {
+                if (source === 'delving' || source === 'delving bitcoin') {
+                    return `<a href="https://delvingbitcoin.org/u/${userObj}" target="_blank">@${userObj}</a>`;
+                }
+                if (source === 'mailing list' || source === 'mailing_list') {
+                    return `@${userObj}`;
+                }
                 return `<a href="https://github.com/${userObj}" target="_blank">@${userObj}</a>`;
             }
             const username = userObj.username;
             const uuid = userObj.uuid;
             if (uuid) {
                 return `<a href="https://network.bitcoindatalabs.org/profile.html?uuid=${uuid}" target="_blank">@${username}</a>`;
+            }
+            if (source === 'delving' || source === 'delving bitcoin') {
+                return `<a href="https://delvingbitcoin.org/u/${username}" target="_blank">@${username}</a>`;
+            }
+            if (source === 'mailing list' || source === 'mailing_list') {
+                return `@${username}`;
             }
             return `<a href="https://github.com/${username}" target="_blank">@${username}</a>`;
         }
@@ -368,7 +380,7 @@
                             ${hasTech ? `<i class="fa-solid fa-chevron-down expand-icon"></i>` : ''}
                             <div class="pr-meta">
                                 <strong>${thread.source}</strong> 
-                                ${thread.author ? `· by ${formatUser(thread.author)}` : ''} 
+                                ${thread.author ? `· by ${formatUser(thread.author, thread.source ? thread.source.toLowerCase() : null)}` : ''} 
                                 · ${thread.message_count} messages
                             </div>
                             <div class="pr-title"><a href="${thread.link}" target="_blank">${thread.subject}</a></div>
