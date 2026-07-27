@@ -272,51 +272,46 @@
             if (data.categories.merged.length > 0) {
                 html += `<h2>Core Code: Merged This Week</h2>`;
 
-                // Flatten all merged PRs to determine global top 10 by importance
                 let allMergedPrs = [];
                 data.categories.merged.forEach(cat => {
                     cat.prs.forEach(pr => {
+                        pr.category_name = cat.name;
                         allMergedPrs.push(pr);
                     });
                 });
 
                 allMergedPrs.sort((a, b) => (b.importance || 0) - (a.importance || 0));
-                const top10PrNumbers = new Set(allMergedPrs.slice(0, 10).map(pr => pr.number));
+                
+                let visibleCount = 0;
                 let hiddenCount = 0;
+                let mergedHtml = "";
 
-                data.categories.merged.forEach(cat => {
-                    let catHtml = `<h3>${formatSectionHeader(cat.name)}</h3>`;
-                    let hasVisible = false;
-                    let hasHidden = false;
-
-                    cat.prs.forEach(pr => {
-                        const isTop10 = top10PrNumbers.has(pr.number);
-                        if (!isTop10) {
-                            hiddenCount++;
-                            hasHidden = true;
-                        } else {
-                            hasVisible = true;
-                        }
-
-                        const hasTech = pr.technical_summary && pr.technical_summary.length > 0;
-                        catHtml += `
-                            <div class="pr-item ${isTop10 ? '' : 'hidden-pr'} ${hasTech ? 'has-tech' : ''}" style="${isTop10 ? '' : 'display: none;'}" ${hasTech ? `onclick="if(event.target.tagName !== 'A' && event.target.closest('a') === null) this.classList.toggle('expanded')"` : ''}>
-                                ${hasTech ? `<i class="fa-solid fa-chevron-down expand-icon"></i>` : ''}
-                                <div class="pr-meta">
-                                    <a href="https://github.com/bitcoin/bitcoin/pull/${pr.number}" target="_blank">#${pr.number}</a>
-                                    by ${formatUser(pr.author)}
-                                </div>
-                                <div class="pr-title">${pr.title}</div>
-                                ${pr.summary ? `<div class="pr-summary">${pr.summary}</div>` : ''}
-                                ${hasTech ? `<div class="pr-technical-summary">${pr.technical_summary}</div>` : ''}
-                            </div>
-                        `;
-                    });
-
-                    if (hasVisible || hasHidden) {
-                        html += `<div class="category-block ${hasVisible ? '' : 'hidden-category'}" style="${hasVisible ? '' : 'display: none;'}">` + catHtml + `</div>`;
+                allMergedPrs.forEach(pr => {
+                    const shouldShow = visibleCount < 10;
+                    if (!shouldShow) {
+                        hiddenCount++;
+                    } else {
+                        visibleCount++;
                     }
+
+                    const hasTech = pr.technical_summary && pr.technical_summary.length > 0;
+                    mergedHtml += `
+                        <div class="pr-item ${shouldShow ? '' : 'hidden-pr'} ${hasTech ? 'has-tech' : ''}" style="${shouldShow ? '' : 'display: none;'}" ${hasTech ? `onclick="if(event.target.tagName !== 'A' && event.target.closest('a') === null) this.classList.toggle('expanded')"` : ''}>
+                            ${hasTech ? `<i class="fa-solid fa-chevron-down expand-icon"></i>` : ''}
+                            <div class="pr-meta">
+                                <a href="https://github.com/bitcoin/bitcoin/pull/${pr.number}" target="_blank">#${pr.number}</a>
+                                by ${formatUser(pr.author)}
+                                <span class="category-badge">${pr.category_name}</span>
+                                ${pr.review_count ? `<span style="margin-left: 8px;">• ${pr.review_count} review comments</span>` : ''}
+                            </div>
+                            <div class="pr-title">${pr.title}</div>
+                            ${pr.summary ? `<div class="pr-summary">${pr.summary}</div>` : ''}
+                            ${hasTech ? `<div class="pr-technical-summary">${pr.technical_summary}</div>` : ''}
+                        </div>
+                    `;
                 });
+
+                html += `<div class="category-block">` + mergedHtml + `</div>`;
 
                 if (hiddenCount > 0) {
                     html += `
@@ -330,25 +325,37 @@
             // Hot PRs
             if (data.categories.hot.length > 0) {
                 html += `<h2>Under Review (Hot PRs)</h2>`;
+                
+                let allHotPrs = [];
                 data.categories.hot.forEach(cat => {
-                    html += `<h3>${formatSectionHeader(cat.name)}</h3>`;
                     cat.prs.forEach(pr => {
-                        const hasTech = pr.technical_summary && pr.technical_summary.length > 0;
-                        html += `
-                            <div class="pr-item ${hasTech ? 'has-tech' : ''}" ${hasTech ? `onclick="if(event.target.tagName !== 'A' && event.target.closest('a') === null) this.classList.toggle('expanded')"` : ''}>
-                                ${hasTech ? `<i class="fa-solid fa-chevron-down expand-icon"></i>` : ''}
-                                <div class="pr-meta">
-                                    <a href="https://github.com/bitcoin/bitcoin/pull/${pr.number}" target="_blank">#${pr.number}</a>
-                                    ${pr.author ? `by ${formatUser(pr.author)}` : ''}
-                                    <span style="margin-left: 8px;">• ${pr.event_count} review comments</span>
-                                </div>
-                                <div class="pr-title">${pr.title}</div>
-                                ${pr.summary ? `<div class="pr-summary">${pr.summary}</div>` : ''}
-                                ${hasTech ? `<div class="pr-technical-summary">${pr.technical_summary}</div>` : ''}
-                            </div>
-                        `;
+                        pr.category_name = cat.name;
+                        allHotPrs.push(pr);
                     });
                 });
+
+                allHotPrs.sort((a, b) => (b.event_count || 0) - (a.event_count || 0));
+                
+                let hotHtml = "";
+                allHotPrs.slice(0, 10).forEach(pr => {
+                    const hasTech = pr.technical_summary && pr.technical_summary.length > 0;
+                    hotHtml += `
+                        <div class="pr-item ${hasTech ? 'has-tech' : ''}" ${hasTech ? `onclick="if(event.target.tagName !== 'A' && event.target.closest('a') === null) this.classList.toggle('expanded')"` : ''}>
+                            ${hasTech ? `<i class="fa-solid fa-chevron-down expand-icon"></i>` : ''}
+                            <div class="pr-meta">
+                                <a href="https://github.com/bitcoin/bitcoin/pull/${pr.number}" target="_blank">#${pr.number}</a>
+                                ${pr.author ? `by ${formatUser(pr.author)}` : ''}
+                                <span class="category-badge">${pr.category_name}</span>
+                                <span style="margin-left: 8px;">• ${pr.event_count} review comments</span>
+                            </div>
+                            <div class="pr-title">${pr.title}</div>
+                            ${pr.summary ? `<div class="pr-summary">${pr.summary}</div>` : ''}
+                            ${hasTech ? `<div class="pr-technical-summary">${pr.technical_summary}</div>` : ''}
+                        </div>
+                    `;
+                });
+                
+                html += `<div class="category-block">` + hotHtml + `</div>`;
             }
 
             // Discussions
