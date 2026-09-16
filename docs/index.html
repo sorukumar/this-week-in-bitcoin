@@ -141,7 +141,7 @@
     <script src="js/app-config.js"></script>
 
     <script>
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
         const DATA_BASE = isLocal
             ? 'output/twib/data/'
             : 'https://raw.githubusercontent.com/sorukumar/orange-dev-data/main/output/twib/data/';
@@ -214,6 +214,40 @@
             btn.innerText = isHidden ? 'Show Less' : `Show ${btn.dataset.count} More PRs`;
         }
 
+        function filterMergedCategory(catName, btnEl) {
+            const container = document.getElementById('merged-category-filters');
+            if (container) {
+                container.querySelectorAll('.filter-pill').forEach(el => el.classList.remove('active'));
+            }
+            if (btnEl) btnEl.classList.add('active');
+
+            const items = document.querySelectorAll('.merged-pr-item');
+            const toggleBtnContainer = document.getElementById('toggle-prs-container');
+
+            if (catName === 'all') {
+                let count = 0;
+                items.forEach(item => {
+                    if (count < 10) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                    count++;
+                });
+                if (toggleBtnContainer) toggleBtnContainer.style.display = 'block';
+            } else {
+                items.forEach(item => {
+                    const itemCat = item.getAttribute('data-category');
+                    if (itemCat === catName || (itemCat && itemCat.includes(catName))) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+                if (toggleBtnContainer) toggleBtnContainer.style.display = 'none';
+            }
+        }
+
         function formatSectionHeader(text) {
             // Strip emojis from the text
             const cleanText = text.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '').trim();
@@ -235,6 +269,7 @@
         }
 
         function renderNewsletter(data) {
+            currentMeetingData = data;
             const content = document.getElementById('content');
             document.getElementById('header-date').textContent = `${data.start_date} — ${data.end_date}`;
 
@@ -259,17 +294,14 @@
                 </div>
             `;
 
-            // TL;DR
+            // 1. TL;DR
             if (data.tldr && data.tldr.length > 0) {
                 html += `<h2>The TL;DR</h2><ul class="tldr-list">`;
                 data.tldr.forEach((point, index) => {
-                    // Clean leading markdown list characters (* or - or digits) and trim whitespace
                     let cleanPoint = point.replace(/^[\*\-\•]+\s*/, '').replace(/^\d+\.\s*/, '').trim();
-                    // Strip any stray ** that the python script left behind
                     cleanPoint = cleanPoint.replace(/\*\*/g, '');
 
                     if (index === 0) {
-                        // Apply drop cap to the first actual letter of the first point
                         const firstChar = cleanPoint.charAt(0);
                         const restOfPoint = cleanPoint.slice(1);
                         html += `<li><span class="drop-cap">${firstChar}</span>${restOfPoint}</li>`;
@@ -280,99 +312,47 @@
                 html += `</ul>`;
             }
 
-            // Merged PRs
-            if (data.categories.merged.length > 0) {
-                html += `<h2>Core Code: Merged This Week</h2>`;
-
-                let allMergedPrs = [];
-                data.categories.merged.forEach(cat => {
-                    cat.prs.forEach(pr => {
-                        pr.category_name = cat.name;
-                        allMergedPrs.push(pr);
-                    });
-                });
-
-                allMergedPrs.sort((a, b) => (b.importance || 0) - (a.importance || 0));
-                
-                let visibleCount = 0;
-                let hiddenCount = 0;
-                let mergedHtml = "";
-
-                allMergedPrs.forEach(pr => {
-                    const shouldShow = visibleCount < 10;
-                    if (!shouldShow) {
-                        hiddenCount++;
-                    } else {
-                        visibleCount++;
-                    }
-
-                    const hasTech = pr.technical_summary && pr.technical_summary.length > 0;
-                    mergedHtml += `
-                        <div class="pr-item ${shouldShow ? '' : 'hidden-pr'} ${hasTech ? 'has-tech' : ''}" style="${shouldShow ? '' : 'display: none;'}" ${hasTech ? `onclick="if(event.target.tagName !== 'A' && event.target.closest('a') === null) this.classList.toggle('expanded')"` : ''}>
-                            ${hasTech ? `<i class="fa-solid fa-chevron-down expand-icon"></i>` : ''}
-                            <div class="pr-meta">
-                                <a href="https://github.com/bitcoin/bitcoin/pull/${pr.number}" target="_blank">#${pr.number}</a>
-                                by ${formatUser(pr.author)}
-                                <span class="category-badge">${pr.category_name}</span>
-                                ${pr.review_count ? `<span style="margin-left: 8px;">• ${pr.review_count} review comments</span>` : ''}
+            // 2. Dev Meeting
+            if (data.meeting) {
+                html += `<h2>🗓️ Weekly Core Meeting</h2>`;
+                html += `
+                    <div class="meeting-summary-card">
+                        <div class="pr-meta" style="margin-bottom: 10px;">
+                            <strong>#bitcoin-core-dev IRC Meeting</strong> · ${data.meeting.date} · ${data.meeting.participant_count || '?'} participants
+                        </div>
+                        <div class="pr-summary" style="margin-top: 10px; color: var(--text-color);">
+                            <ul style="margin-top: 0; padding-left: 20px;">
+                                ${(data.meeting.topics_discussed || []).map(t => `<li style="margin-bottom: 6px;">${t}</li>`).join('')}
+                            </ul>
+                            ${(data.meeting.action_items && data.meeting.action_items.length > 0) ? `
+                                <div class="action-items-box" style="margin-top: 1rem;">
+                                    <strong style="color: var(--accent-color-text); font-family: var(--font-sans); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;"><i class="fa-solid fa-list-check"></i> Action Items:</strong>
+                                    <ul style="margin: 0.4rem 0 0 1.2rem; padding: 0;">
+                                        ${data.meeting.action_items.map(a => `<li style="margin-bottom: 4px;">${a}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div style="margin-top: 1.2rem; padding-top: 0.8rem; border-top: 1px dashed var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                <button class="btn-icon-link" onclick="copyLatestMeetingMarkdown()">
+                                    <i class="fa-regular fa-copy"></i> Copy Markdown
+                                </button>
+                                <button class="btn-icon-link" onclick="shareMeetingToX('${data.meeting.date}')">
+                                    <i class="fa-brands fa-x-twitter"></i> Share Summary to X
+                                </button>
                             </div>
-                            <div class="pr-title">${pr.title}</div>
-                            ${pr.summary ? `<div class="pr-summary">${pr.summary}</div>` : ''}
-                            ${hasTech ? `<div class="pr-technical-summary">${pr.technical_summary}</div>` : ''}
+                            <a href="meetings.html" class="archive-cta-btn">
+                                <i class="fa-solid fa-box-archive"></i> Search 200+ Weekly Core Meetings in Archive →
+                            </a>
                         </div>
-                    `;
-                });
-
-                html += `<div class="category-block">` + mergedHtml + `</div>`;
-
-                if (hiddenCount > 0) {
-                    html += `
-                        <div style="text-align: center; margin-top: 20px;">
-                            <button id="toggle-prs-btn" data-count="${hiddenCount}" style="padding: 10px 20px; background-color: var(--accent-color); color: white; border: none; border-radius: 4px; cursor: pointer; font-family: var(--font-sans); font-weight: 600;" onclick="togglePrs()">Show ${hiddenCount} More PRs</button>
-                        </div>
-                    `;
-                }
+                    </div>
+                `;
             }
 
-            // Hot PRs
-            if (data.categories.hot.length > 0) {
-                html += `<h2>Under Review (Hot PRs)</h2>`;
-                
-                let allHotPrs = [];
-                data.categories.hot.forEach(cat => {
-                    cat.prs.forEach(pr => {
-                        pr.category_name = cat.name;
-                        allHotPrs.push(pr);
-                    });
-                });
-
-                allHotPrs.sort((a, b) => (b.event_count || 0) - (a.event_count || 0));
-                
-                let hotHtml = "";
-                allHotPrs.slice(0, 10).forEach(pr => {
-                    const hasTech = pr.technical_summary && pr.technical_summary.length > 0;
-                    hotHtml += `
-                        <div class="pr-item ${hasTech ? 'has-tech' : ''}" ${hasTech ? `onclick="if(event.target.tagName !== 'A' && event.target.closest('a') === null) this.classList.toggle('expanded')"` : ''}>
-                            ${hasTech ? `<i class="fa-solid fa-chevron-down expand-icon"></i>` : ''}
-                            <div class="pr-meta">
-                                <a href="https://github.com/bitcoin/bitcoin/pull/${pr.number}" target="_blank">#${pr.number}</a>
-                                ${pr.author ? `by ${formatUser(pr.author)}` : ''}
-                                <span class="category-badge">${pr.category_name}</span>
-                                <span style="margin-left: 8px;">• ${pr.event_count} review comments</span>
-                            </div>
-                            <div class="pr-title">${pr.title}</div>
-                            ${pr.summary ? `<div class="pr-summary">${pr.summary}</div>` : ''}
-                            ${hasTech ? `<div class="pr-technical-summary">${pr.technical_summary}</div>` : ''}
-                        </div>
-                    `;
-                });
-                
-                html += `<div class="category-block">` + hotHtml + `</div>`;
-            }
-
-            // Discussions
-            if (data.discussions.length > 0) {
-                html += `<h2>Research & Governance</h2>`;
+            // 3. Research & Governance
+            if (data.discussions && data.discussions.length > 0) {
+                html += `<h2>🗣️ Protocol R&D & Discussions</h2>`;
                 data.discussions.forEach(thread => {
                     const hasTech = thread.technical_summary && thread.technical_summary.length > 0;
                     html += `
@@ -391,40 +371,209 @@
                 });
             }
 
-            // Shoutouts
-            html += `<h2>Contributor Shoutouts</h2>`;
-            if (data.shoutouts.new_contributors.length > 0) {
-                html += `<h3>${formatSectionHeader('Welcome First-Time Contributors')}</h3><div class="shoutout-list">`;
-                data.shoutouts.new_contributors.forEach(u => {
-                    html += `<span>${formatUser(u)}</span>`;
+            // 4. Merged PRs
+            if (data.categories.merged && data.categories.merged.length > 0) {
+                html += `
+                    <h2>🚢 Merged Code</h2>
+                    <div class="filter-pills" style="margin-bottom: 1.5rem;" id="merged-category-filters">
+                        <button class="filter-pill active" onclick="filterMergedCategory('all', this)">All Categories</button>
+                        <button class="filter-pill" onclick="filterMergedCategory('Security & Consensus', this)">Consensus</button>
+                        <button class="filter-pill" onclick="filterMergedCategory('Performance & Optimization', this)">Performance</button>
+                        <button class="filter-pill" onclick="filterMergedCategory('Network & Privacy', this)">P2P & Network</button>
+                        <button class="filter-pill" onclick="filterMergedCategory('Wallet & User Tools', this)">Wallet & Tools</button>
+                        <button class="filter-pill" onclick="filterMergedCategory('Maintenance & Tech Debt', this)">Maintenance</button>
+                    </div>
+                `;
+
+                let allMergedPrs = [];
+                data.categories.merged.forEach(cat => {
+                    cat.prs.forEach(pr => {
+                        pr.category_name = cat.name;
+                        allMergedPrs.push(pr);
+                    });
                 });
-                html += `</div>`;
+
+                allMergedPrs.sort((a, b) => (b.importance || 0) - (a.importance || 0));
+
+                let visibleCount = 0;
+                let hiddenCount = 0;
+                let mergedHtml = "";
+
+                allMergedPrs.forEach(pr => {
+                    const shouldShow = visibleCount < 10;
+                    if (!shouldShow) {
+                        hiddenCount++;
+                    } else {
+                        visibleCount++;
+                    }
+
+                    const hasTech = pr.technical_summary && pr.technical_summary.length > 0;
+                    mergedHtml += `
+                        <div class="pr-item merged-pr-item ${shouldShow ? '' : 'hidden-pr'} ${hasTech ? 'has-tech' : ''}" data-category="${pr.category_name}" style="${shouldShow ? '' : 'display: none;'}" ${hasTech ? `onclick="if(event.target.tagName !== 'A' && event.target.closest('a') === null) this.classList.toggle('expanded')"` : ''}>
+                            ${hasTech ? `<i class="fa-solid fa-chevron-down expand-icon"></i>` : ''}
+                            <div class="pr-meta">
+                                <a href="https://github.com/bitcoin/bitcoin/pull/${pr.number}" target="_blank">#${pr.number}</a>
+                                by ${formatUser(pr.author)}
+                                <span class="category-badge">${pr.category_name}</span>
+                                ${pr.review_count ? `<span style="margin-left: 8px;">• ${pr.review_count} review comments</span>` : ''}
+                            </div>
+                            <div class="pr-title"><a href="https://github.com/bitcoin/bitcoin/pull/${pr.number}" target="_blank">${pr.title}</a></div>
+                            ${pr.summary ? `<div class="pr-summary">${pr.summary}</div>` : ''}
+                            ${hasTech ? `<div class="pr-technical-summary">${pr.technical_summary}</div>` : ''}
+                        </div>
+                    `;
+                });
+
+                html += `<div class="category-block" id="merged-prs-block">` + mergedHtml + `</div>`;
+
+                if (hiddenCount > 0) {
+                    html += `
+                        <div style="text-align: center; margin-top: 20px;" id="toggle-prs-container">
+                            <button id="toggle-prs-btn" data-count="${hiddenCount}" style="padding: 10px 20px; background-color: var(--accent-color); color: white; border: none; border-radius: 4px; cursor: pointer; font-family: var(--font-sans); font-weight: 600;" onclick="togglePrs()">Show ${hiddenCount} More PRs</button>
+                        </div>
+                    `;
+                }
             }
 
-            if (data.shoutouts.top_authors.length > 0) {
-                html += `<h3>${formatSectionHeader('Top Authors (Merged PRs)')}</h3><div class="shoutout-list">`;
-                data.shoutouts.top_authors.forEach(u => {
-                    html += `<span>${formatUser(u.user)} (${u.count})</span>`;
+            // 5. Hot PRs
+            if (data.categories.hot && data.categories.hot.length > 0) {
+                html += `<h2>🔥 Active Code Under Review</h2>`;
+
+                let allHotPrs = [];
+                data.categories.hot.forEach(cat => {
+                    cat.prs.forEach(pr => {
+                        pr.category_name = cat.name;
+                        allHotPrs.push(pr);
+                    });
                 });
-                html += `</div>`;
+
+                allHotPrs.sort((a, b) => (b.event_count || 0) - (a.event_count || 0));
+
+                let hotHtml = "";
+                allHotPrs.slice(0, 10).forEach(pr => {
+                    const hasTech = pr.technical_summary && pr.technical_summary.length > 0;
+                    hotHtml += `
+                        <div class="pr-item ${hasTech ? 'has-tech' : ''}" ${hasTech ? `onclick="if(event.target.tagName !== 'A' && event.target.closest('a') === null) this.classList.toggle('expanded')"` : ''}>
+                            ${hasTech ? `<i class="fa-solid fa-chevron-down expand-icon"></i>` : ''}
+                            <div class="pr-meta">
+                                <a href="https://github.com/bitcoin/bitcoin/pull/${pr.number}" target="_blank">#${pr.number}</a>
+                                ${pr.author ? `by ${formatUser(pr.author)}` : ''}
+                                <span class="category-badge">${pr.category_name}</span>
+                                <span style="margin-left: 8px;">• ${pr.event_count} review comments</span>
+                            </div>
+                            <div class="pr-title"><a href="https://github.com/bitcoin/bitcoin/pull/${pr.number}" target="_blank">${pr.title}</a></div>
+                            ${pr.summary ? `<div class="pr-summary">${pr.summary}</div>` : ''}
+                            ${hasTech ? `<div class="pr-technical-summary">${pr.technical_summary}</div>` : ''}
+                        </div>
+                    `;
+                });
+
+                html += `<div class="category-block">` + hotHtml + `</div>`;
             }
 
-            if (data.shoutouts.top_reviewers.length > 0) {
-                html += `<h3>${formatSectionHeader('Top Reviewers')}</h3><div class="shoutout-list">`;
-                data.shoutouts.top_reviewers.forEach(u => {
-                    html += `<span>${formatUser(u.user)} (${u.count})</span>`;
-                });
-                html += `</div>`;
+            // 6. Contributor Spotlight
+            html += `<h2>🏆 Contributor Spotlight</h2>`;
+            html += `<div class="contributor-spotlight-block">`;
+
+            if (data.shoutouts && data.shoutouts.new_contributors && data.shoutouts.new_contributors.length > 0) {
+                html += `
+                    <div class="first-time-contributors-card">
+                        <div class="first-time-header">
+                            <span class="first-time-title-badge"><i class="fa-solid fa-award"></i> Welcome First-Time Contributors</span>
+                            <span class="first-time-subtitle">New developers merged into Bitcoin Core this week</span>
+                        </div>
+                        <div class="first-time-names">
+                            ${data.shoutouts.new_contributors.map(u => formatUser(u)).join('')}
+                        </div>
+                    </div>
+                `;
             }
+
+            // Demoted Maintainers & Reviewers Footnote
+            let maintainerItems = [];
+            if (data.shoutouts && data.shoutouts.top_reviewers) {
+                data.shoutouts.top_reviewers.slice(0, 5).forEach(r => {
+                    maintainerItems.push(`${formatUser(r.user)} (${r.count} reviews)`);
+                });
+            }
+            if (data.shoutouts && data.shoutouts.top_authors) {
+                data.shoutouts.top_authors.slice(0, 3).forEach(a => {
+                    maintainerItems.push(`${formatUser(a.user)} (${a.count} merges)`);
+                });
+            }
+
+            if (maintainerItems.length > 0) {
+                html += `
+                    <div class="maintainer-footnote">
+                        <strong class="maintainer-label">Active Maintainers & Key Reviewers:</strong>
+                        <span class="maintainer-list">${maintainerItems.join(' · ')}</span>
+                    </div>
+                `;
+            }
+
+            html += `
+                <div class="spotlight-cta-container">
+                    <a href="https://network.bitcoindatalabs.org" target="_blank" class="archive-cta-btn">
+                        <i class="fa-solid fa-network-wired"></i> Explore Developer Influence Map on Orange Dev Network →
+                    </a>
+                </div>
+            </div>`;
 
             content.innerHTML = html;
             window.scrollTo(0, 0); // Scroll to top when loading new edition
+        }
+
+        function shareMeetingToX(dateStr) {
+            const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '').replace(/\/$/, '/') + 'meetings.html';
+            const permalink = `${baseUrl}?date=${dateStr}`;
+            const text = `Bitcoin Core Meeting (${dateStr}): Weekly protocol meeting recap.\n\nRead the summary on @BitcoinDataLabs:`;
+            const shareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(permalink)}`;
+            window.open(shareUrl, '_blank', 'noopener,noreferrer');
+        }
+
+        let currentMeetingData = null;
+
+        function copyLatestMeetingMarkdown() {
+            if (!currentMeetingData || !currentMeetingData.meeting) return;
+            const m = currentMeetingData.meeting;
+
+            let md = `### 🗓️ Bitcoin Core Meeting Summary — ${m.date}\n`;
+            if (m.participant_count) md += `**Participants:** ${m.participant_count} · **IRC Channel:** #bitcoin-core-dev\n\n`;
+
+            if (m.topics_discussed && m.topics_discussed.length > 0) {
+                md += `**Topics Discussed:**\n`;
+                m.topics_discussed.forEach(t => md += `- ${t}\n`);
+                md += `\n`;
+            }
+
+            if (m.action_items && m.action_items.length > 0) {
+                md += `**Action Items:**\n`;
+                m.action_items.forEach(a => md += `- ${a}\n`);
+                md += `\n`;
+            }
+
+            md += `*Source: https://twib.bitcoindatalabs.org/meetings.html?date=${m.date}*`;
+
+            navigator.clipboard.writeText(md).then(() => {
+                showToast('Meeting summary copied as Markdown!');
+            });
+        }
+
+        function showToast(message) {
+            let toast = document.getElementById('twib-toast');
+            if (!toast) return;
+            toast.innerHTML = `<i class="fa-solid fa-circle-check" style="color: #48bb78;"></i> ${message}`;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
         }
 
         // Initialize
         loadArchiveIndex();
         fetchNewsletter();
     </script>
+    <div id="twib-toast" class="twib-toast"></div>
 </body>
 
 </html>

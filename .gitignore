@@ -4,6 +4,7 @@ __pycache__/
 docs/output/
 *.pyc
 .venv/
+.vscode/
 
 
 

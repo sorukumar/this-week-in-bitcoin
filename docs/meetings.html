@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Core Meeting Archive | This Week in Bitcoin</title>
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Weekly Core Meeting Archive — This Week in Bitcoin">
+    <meta property="og:description"
+        content="Search tactical decisions, PR blockers, and protocol discussions from weekly Bitcoin Core developer meetings.">
+    <meta property="og:image" content="https://twib.bitcoindatalabs.org/images/og-image.png">
+    <meta property="og:url" content="https://twib.bitcoindatalabs.org/meetings.html">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Weekly Core Meeting Archive — This Week in Bitcoin">
+    <meta name="twitter:description"
+        content="Search tactical decisions, PR blockers, and protocol discussions from weekly Bitcoin Core developer meetings.">
+    <meta name="twitter:image" content="https://twib.bitcoindatalabs.org/images/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400;0,6..72,800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Bitcoin Data Labs Shell Styles -->
+    <link rel="stylesheet" href="https://bitcoindatalabs.org/styles/styles.css">
+
+    <!-- Modularized Local Styles -->
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+
+<body class="has-fixed-header">
+
+    <!-- Bitcoin Data Labs Header -->
+    <div id="header"></div>
+
+    <div class="container">
+        <div class="utility-bar">
+            <span class="utility-left">
+                <a href="index.html">
+                    <i class="fa-solid fa-arrow-left" style="margin-right: 4px;"></i> Back to Weekly Digest
+                </a>
+            </span>
+            <span class="utility-center">Decision Record</span>
+            <span class="utility-archive" id="meeting-count-badge">
+                Loading archive...
+            </span>
+        </div>
+
+        <header>
+            <h1 style="font-size: clamp(1.8rem, 4.5vw, 2.5rem); white-space: nowrap; letter-spacing: -0.01em;">Weekly Core Meeting Archive</h1>
+        </header>
+
+        <!-- Search & Controls Bar -->
+        <div class="archive-search-container">
+            <div class="archive-search-row">
+                <div class="archive-search-input-wrapper">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="archive-search-input" class="archive-search-input"
+                        placeholder="Search by topic, keyword, PR # (e.g. #34374), or developer handle (e.g. @fjahr)..."
+                        oninput="onSearchInput(this.value)">
+                </div>
+            </div>
+
+            <div class="filter-pills" id="year-filter-pills">
+                <button class="filter-pill active" onclick="setYearFilter('all', this)">All Years</button>
+            </div>
+        </div>
+
+        <div class="keyboard-hint-bar">
+            <span><span class="kbd-key">/</span> Focus Search</span>
+            <span><span class="kbd-key">j</span> / <span class="kbd-key">k</span> Navigate Meetings</span>
+            <span><span class="kbd-key">Esc</span> Reset Filters</span>
+        </div>
+
+        <div class="results-stats">
+            <span id="results-count-text">Showing all meetings</span>
+            <span id="active-filter-indicator" style="font-weight: 600; color: var(--accent-color-text);"></span>
+        </div>
+
+        <main id="meetings-list-container">
+            <p style="text-align: center; font-family: var(--font-sans);">Loading meeting archive...</p>
+        </main>
+    </div>
+
+    <!-- Toast Feedback Container -->
+    <div id="twib-toast" class="twib-toast"></div>
+
+    <!-- Bitcoin Data Labs Footer -->
+    <div id="footer"></div>
+
+    <!-- Bitcoin Data Labs App Components -->
+    <script src="https://bitcoindatalabs.org/components/app-components.js"></script>
+    <script src="js/app-config.js"></script>
+
+    <script>
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
+        const DATA_BASE = isLocal
+            ? 'output/twib/data/'
+            : 'https://raw.githubusercontent.com/sorukumar/orange-dev-data/main/output/twib/data/';
+
+        let allMeetings = [];
+        let activeYearFilter = 'all';
+        let searchQuery = '';
+        let targetDatePermalink = null;
+        let currentCardIndex = -1;
+
+        async function init() {
+            // Check query params
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('q')) {
+                searchQuery = urlParams.get('q');
+                document.getElementById('archive-search-input').value = searchQuery;
+            }
+            if (urlParams.has('date')) {
+                targetDatePermalink = urlParams.get('date');
+            }
+
+            try {
+                const response = await fetch(DATA_BASE + 'meetings.json');
+                if (!response.ok) throw new Error('Could not fetch meeting archive');
+                allMeetings = await response.json();
+                
+                document.getElementById('meeting-count-badge').textContent = `${allMeetings.length} Meetings Indexed`;
+                setupYearFilters();
+                renderMeetings();
+
+                if (targetDatePermalink) {
+                    setTimeout(() => {
+                        const targetEl = document.getElementById(`meeting-${targetDatePermalink}`);
+                        if (targetEl) {
+                            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            targetEl.classList.add('highlighted');
+                        }
+                    }, 200);
+                }
+            } catch (error) {
+                console.error(error);
+                document.getElementById('meetings-list-container').innerHTML = `
+                    <p style="text-align: center; color: var(--accent-color-text); font-family: var(--font-sans);">
+                        Failed to load meeting archive data: ${error.message}
+                    </p>
+                `;
+            }
+        }
+
+        function setupYearFilters() {
+            const yearsSet = new Set();
+            allMeetings.forEach(m => {
+                if (m.date) {
+                    const y = m.date.substring(0, 4);
+                    yearsSet.add(y);
+                }
+            });
+
+            const sortedYears = Array.from(yearsSet).sort().reverse();
+            const pillsContainer = document.getElementById('year-filter-pills');
+            
+            let html = `<button class="filter-pill ${activeYearFilter === 'all' ? 'active' : ''}" onclick="setYearFilter('all', this)">All Years</button>`;
+            sortedYears.forEach(year => {
+                html += `<button class="filter-pill ${activeYearFilter === year ? 'active' : ''}" onclick="setYearFilter('${year}', this)">${year}</button>`;
+            });
+
+            pillsContainer.innerHTML = html;
+        }
+
+        function setYearFilter(year, btnEl) {
+            activeYearFilter = year;
+            document.querySelectorAll('.filter-pill').forEach(el => el.classList.remove('active'));
+            if (btnEl) btnEl.classList.add('active');
+            renderMeetings();
+        }
+
+        function onSearchInput(val) {
+            searchQuery = val.trim().toLowerCase();
+            renderMeetings();
+        }
+
+        function filterByDev(username) {
+            document.getElementById('archive-search-input').value = username;
+            searchQuery = username.toLowerCase();
+            renderMeetings();
+            window.scrollTo({ top: 200, behavior: 'smooth' });
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.split('-');
+            if (parts.length !== 3) return dateStr;
+            const dateObj = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+            return dateObj.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                timeZone: 'UTC'
+            });
+        }
+
+        function renderMeetings() {
+            const container = document.getElementById('meetings-list-container');
+            const statsText = document.getElementById('results-count-text');
+            currentCardIndex = -1;
+
+            let filtered = allMeetings.filter(m => {
+                // Year filter
+                if (activeYearFilter !== 'all') {
+                    if (!m.date || !m.date.startsWith(activeYearFilter)) return false;
+                }
+
+                // Search query filter
+                if (searchQuery) {
+                    const q = searchQuery;
+                    const dateMatch = m.date && m.date.includes(q);
+                    const formattedDateMatch = formatDate(m.date).toLowerCase().includes(q);
+                    const topicsMatch = (m.topics_discussed || []).some(t => t.toLowerCase().includes(q));
+                    const decisionsMatch = (m.decisions_made || []).some(d => d.toLowerCase().includes(q));
+                    const actionsMatch = (m.action_items || []).some(a => a.toLowerCase().includes(q));
+                    const participantsMatch = (m.key_participants || []).some(p => p.toLowerCase().includes(q.replace('@', '')));
+                    const prsMatch = (m.mentioned_prs || []).some(pr => pr.toString().includes(q.replace('#', '')));
+
+                    return dateMatch || formattedDateMatch || topicsMatch || decisionsMatch || actionsMatch || participantsMatch || prsMatch;
+                }
+
+                return true;
+            });
+
+            statsText.textContent = `Showing ${filtered.length} of ${allMeetings.length} meetings`;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 3rem 1rem; font-family: var(--font-sans);">
+                        <i class="fa-solid fa-folder-open" style="font-size: 2.5rem; opacity: 0.4; margin-bottom: 1rem;"></i>
+                        <p style="font-size: 1.1rem; color: var(--text-color);">No core dev meetings match your filter criteria.</p>
+                        <button onclick="clearFilters()" style="margin-top: 0.5rem; padding: 0.5rem 1rem; background-color: var(--accent-color); color: #fff; border: none; border-radius: 4px; font-weight: 600; cursor: pointer;">Reset Filters</button>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(m => {
+                const isTarget = targetDatePermalink && m.date === targetDatePermalink;
+                const formattedDateStr = formatDate(m.date);
+
+                // Smart Headline Verdict Fallback
+                let headline = m.headline_verdict;
+                if (!headline) {
+                    if (m.decisions_made && m.decisions_made.length > 0) {
+                        headline = m.decisions_made[0];
+                    } else if (m.topics_discussed && m.topics_discussed.length > 0) {
+                        headline = m.topics_discussed[0];
+                    }
+                }
+
+                html += `
+                    <div class="meeting-card ${isTarget ? 'highlighted' : ''}" id="meeting-${m.date}">
+                        <div class="meeting-card-header">
+                            <div class="meeting-card-date">${formattedDateStr}</div>
+                            <div class="meeting-card-meta">
+                                ${m.participant_count ? `<span class="participant-badge"><i class="fa-solid fa-users"></i> ${m.participant_count} Participants</span>` : ''}
+                            </div>
+                        </div>
+
+                        ${(m.key_participants && m.key_participants.length > 0) ? `
+                            <div class="key-participants-row">
+                                <strong>Active Sync Participants:</strong>
+                                ${m.key_participants.map(p => {
+                                    const cleanNick = p.replace(/^@/, '');
+                                    return `
+                                        <span class="dev-handle-pill">
+                                            <span class="dev-handle-name" onclick="filterByDev('@${cleanNick}')" title="Filter meetings by @${cleanNick}">@${cleanNick}</span>
+                                            <a href="https://github.com/${cleanNick}" target="_blank" rel="noopener noreferrer" class="dev-handle-external-link" title="View @${cleanNick} developer profile">
+                                                <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.65rem;"></i>
+                                            </a>
+                                        </span>
+                                    `;
+                                }).join('')}
+                            </div>
+                        ` : ''}
+
+                        ${(m.topics_discussed && m.topics_discussed.length > 0) ? `
+                            <div class="meeting-section-title"><i class="fa-solid fa-comments"></i> Topics Discussed</div>
+                            <ul class="meeting-topics-list">
+                                ${m.topics_discussed.map(t => `<li>${t}</li>`).join('')}
+                            </ul>
+                        ` : ''}
+
+                        ${(m.decisions_made && m.decisions_made.length > 0) ? `
+                            <div class="decisions-box">
+                                <div class="meeting-section-title" style="margin-top: 0; color: #2e7559;">
+                                    <i class="fa-solid fa-circle-check"></i> Decisions & Consensus Reached
+                                </div>
+                                <ul>
+                                    ${m.decisions_made.map(d => `<li style="margin-bottom: 4px;">${d}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+
+                        ${(m.action_items && m.action_items.length > 0) ? `
+                            <div class="action-items-box">
+                                <div class="meeting-section-title" style="margin-top: 0; color: var(--accent-color-text);">
+                                    <i class="fa-solid fa-list-check"></i> Action Items & Next Steps
+                                </div>
+                                <ul>
+                                    ${m.action_items.map(a => `<li style="margin-bottom: 4px;">${a}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+
+                        ${(m.mentioned_prs && m.mentioned_prs.length > 0) ? `
+                            <div class="prs-row">
+                                <strong style="color: var(--text-color);">PRs Referenced:</strong>
+                                ${m.mentioned_prs.map(pr => `
+                                    <a href="https://github.com/bitcoin/bitcoin/pull/${pr}" target="_blank" class="pr-badge-link">
+                                        <i class="fa-solid fa-code-pull-request"></i> #${pr}
+                                    </a>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+
+                        <div class="meeting-card-footer">
+                            <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                                <button class="btn-icon-link" onclick="copyPermalink('${m.date}', this)">
+                                    <i class="fa-solid fa-link"></i> Copy Link
+                                </button>
+                                <button class="btn-icon-link" onclick="copyMeetingMarkdown('${m.date}')">
+                                    <i class="fa-regular fa-copy"></i> Copy Markdown
+                                </button>
+                                <button class="btn-icon-link" onclick="shareToX('${m.date}', '${formattedDateStr}', ${m.decisions_made ? m.decisions_made.length : 0})">
+                                    <i class="fa-brands fa-x-twitter"></i> Share to X
+                                </button>
+                            </div>
+
+                            ${m.url ? `
+                                <a href="${m.url}" target="_blank" class="btn-icon-link" style="color: var(--accent-color-text);">
+                                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Raw IRC Transcript
+                                </a>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function clearFilters() {
+            activeYearFilter = 'all';
+            searchQuery = '';
+            document.getElementById('archive-search-input').value = '';
+            setupYearFilters();
+            renderMeetings();
+        }
+
+        function copyPermalink(dateStr, btnEl) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('date', dateStr);
+            navigator.clipboard.writeText(url.toString()).then(() => {
+                showToast('Meeting link copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy link', err);
+            });
+        }
+
+        function copyMeetingMarkdown(dateStr) {
+            const meeting = allMeetings.find(m => m.date === dateStr);
+            if (!meeting) return;
+
+            let md = `### 🗓️ Bitcoin Core Meeting Summary — ${formatDate(meeting.date)}\n`;
+            if (meeting.participant_count) md += `**Participants:** ${meeting.participant_count} · **IRC Channel:** #bitcoin-core-dev\n\n`;
+
+            if (meeting.topics_discussed && meeting.topics_discussed.length > 0) {
+                md += `**Topics Discussed:**\n`;
+                meeting.topics_discussed.forEach(t => md += `- ${t}\n`);
+                md += `\n`;
+            }
+
+            if (meeting.decisions_made && meeting.decisions_made.length > 0) {
+                md += `**Decisions & Consensus:**\n`;
+                meeting.decisions_made.forEach(d => md += `- ${d}\n`);
+                md += `\n`;
+            }
+
+            if (meeting.action_items && meeting.action_items.length > 0) {
+                md += `**Action Items:**\n`;
+                meeting.action_items.forEach(a => md += `- ${a}\n`);
+                md += `\n`;
+            }
+
+            md += `*Source: https://twib.bitcoindatalabs.org/meetings.html?date=${dateStr}*`;
+
+            navigator.clipboard.writeText(md).then(() => {
+                showToast('Meeting summary copied as Markdown!');
+            });
+        }
+
+        function showToast(message) {
+            let toast = document.getElementById('twib-toast');
+            if (!toast) return;
+            toast.innerHTML = `<i class="fa-solid fa-circle-check" style="color: #48bb78;"></i> ${message}`;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        function shareToX(dateStr, formattedDate, decisionsCount) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('date', dateStr);
+            
+            let text = `Bitcoin Core Meeting (${formattedDate})`;
+            if (decisionsCount > 0) {
+                text += `: ${decisionsCount} key consensus decision${decisionsCount > 1 ? 's' : ''} reached.`;
+            } else {
+                text += `: Weekly protocol meeting recap.`;
+            }
+            text += `\n\nRead the summary on @BitcoinDataLabs:`;
+
+            const shareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url.toString())}`;
+            window.open(shareUrl, '_blank', 'noopener,noreferrer');
+        }
+
+        // Global Keyboard Navigation (/ to search, j/k to navigate cards, Esc to reset)
+        document.addEventListener('keydown', function(e) {
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+                if (e.key === 'Escape') {
+                    document.activeElement.blur();
+                    clearFilters();
+                }
+                return;
+            }
+
+            if (e.key === '/') {
+                e.preventDefault();
+                const searchInput = document.getElementById('archive-search-input');
+                if (searchInput) searchInput.focus();
+            } else if (e.key === 'Escape') {
+                clearFilters();
+            } else if (e.key === 'j' || e.key === 'k') {
+                const cards = document.querySelectorAll('.meeting-card');
+                if (cards.length === 0) return;
+
+                cards.forEach(c => c.classList.remove('kb-focused'));
+
+                if (e.key === 'j') {
+                    currentCardIndex = Math.min(currentCardIndex + 1, cards.length - 1);
+                } else if (e.key === 'k') {
+                    currentCardIndex = Math.max(currentCardIndex - 1, 0);
+                }
+
+                const targetCard = cards[currentCardIndex];
+                if (targetCard) {
+                    targetCard.classList.add('kb-focused');
+                    targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+
+        init();
+    </script>
+</body>
+
+</html>
