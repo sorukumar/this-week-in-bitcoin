@@ -5,6 +5,8 @@ docs/output/
 *.pyc
 .venv/
 .vscode/
+PRODUCT_VISION.md
+
 
 
 
