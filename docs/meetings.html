@@ -33,6 +33,8 @@
 
     <!-- Modularized Local Styles -->
     <link rel="stylesheet" href="styles/style.css">
+
+
 </head>
 
 <body class="has-fixed-header">
@@ -132,6 +134,8 @@
                 renderMeetings();
 
                 if (targetDatePermalink) {
+                    const match = allMeetings.find(m => m.date === targetDatePermalink);
+                    if (match) populateSocialCard(match);
                     setTimeout(() => {
                         const targetEl = document.getElementById(`meeting-${targetDatePermalink}`);
                         if (targetEl) {
@@ -139,7 +143,10 @@
                             targetEl.classList.add('highlighted');
                         }
                     }, 200);
+                } else if (allMeetings.length > 0) {
+                    populateSocialCard(allMeetings[0]);
                 }
+                document.body.setAttribute('data-card-ready', 'true');
             } catch (error) {
                 console.error(error);
                 document.getElementById('meetings-list-container').innerHTML = `
@@ -200,6 +207,49 @@
                 day: 'numeric',
                 timeZone: 'UTC'
             });
+        }
+
+        function populateSocialCard(meeting) {
+            if (!meeting) return;
+            const dateStr = formatDate(meeting.date);
+            document.getElementById('mcard-date').textContent = dateStr;
+            document.getElementById('mcard-participants').textContent = `${meeting.participant_count || 0} Contributors`;
+            
+            const decisions = meeting.decisions_made || [];
+            document.getElementById('mcard-decisions-count').textContent = `${decisions.length} Decisions`;
+            
+            // Topics
+            const topics = meeting.topics_discussed || [];
+            const topicsEl = document.getElementById('mcard-topics');
+            if (topics.length > 0) {
+                topicsEl.innerHTML = topics.slice(0, 3).map(t => `<li>${t}</li>`).join('');
+            } else {
+                topicsEl.innerHTML = '<li>General codebase maintenance and review status sync.</li>';
+            }
+
+            // Decisions Quote
+            const decisionEl = document.getElementById('mcard-decision-text');
+            if (decisions.length > 0) {
+                decisionEl.textContent = `"${decisions[0]}"`;
+            } else if (meeting.headline_verdict) {
+                decisionEl.textContent = `"${meeting.headline_verdict}"`;
+            } else {
+                decisionEl.textContent = '"Focus on review velocity and test stabilization."';
+            }
+
+            // PRs
+            const prs = meeting.mentioned_prs || [];
+            const prsEl = document.getElementById('mcard-prs');
+            if (prs.length > 0) {
+                prsEl.innerHTML = prs.slice(0, 6).map(pr => `<span class="pr-badge">PR #${pr}</span>`).join('');
+            } else {
+                prsEl.innerHTML = '<span class="pr-badge">General Topics</span>';
+            }
+
+            const permalinkEl = document.getElementById('mcard-permalink-text');
+            if (permalinkEl && meeting.date) {
+                permalinkEl.textContent = `twib.bitcoindatalabs.org/meetings.html?date=${meeting.date}`;
+            }
         }
 
         function renderMeetings() {

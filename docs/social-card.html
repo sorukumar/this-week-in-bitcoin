@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>This Week in Bitcoin — Social Cards</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #F1F2DC;
+            --card-bg: #E5E7CC;
+            --card-border: #D0D3B0;
+            --accent-color: #E8916B;
+            --text-primary: #1A1D24;
+            --text-secondary: #4A4E57;
+            --text-dim: #6B707B;
+            --font-serif: 'Newsreader', Georgia, serif;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #E0E2C8;
+            font-family: var(--font-sans);
+            color: var(--text-primary);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .social-slide {
+            width: 1200px;
+            height: 675px;
+            background-color: var(--bg-color);
+            position: relative;
+            overflow: hidden;
+            padding: 50px 60px;
+            margin-bottom: 40px;
+            border: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Header */
+        .slide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .header-left {
+            max-width: 900px;
+        }
+
+        .category-tag {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent-color);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .slide-title {
+            font-family: var(--font-serif);
+            font-size: 52px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.15;
+            margin-bottom: 8px;
+        }
+
+        .slide-title-underline {
+            width: 320px;
+            height: 4px;
+            background-color: var(--accent-color);
+            margin-bottom: 12px;
+        }
+
+        .slide-subtitle {
+            font-size: 24px;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .logo-box img {
+            width: 110px;
+            height: auto;
+        }
+
+        /* Main Container Cards */
+        .hero-container {
+            background-color: var(--card-bg);
+            border: 2px solid var(--card-border);
+            padding: 35px 45px;
+            border-radius: 4px;
+            position: relative;
+            flex-grow: 1;
+            margin: 25px 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .quote-mark {
+            font-family: var(--font-serif);
+            font-size: 80px;
+            color: var(--accent-color);
+            line-height: 0.6;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .hero-quote-text {
+            font-family: var(--font-serif);
+            font-size: 30px;
+            line-height: 1.35;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+        }
+
+        .hero-subtext {
+            font-size: 22px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            border-top: 1px solid var(--card-border);
+            padding-top: 15px;
+        }
+
+        /* 2x2 Grid Stats */
+        .grid-2x2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            flex-grow: 1;
+            margin: 25px 0;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            border: 2px solid var(--card-border);
+            padding: 30px 35px;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .stat-value {
+            font-size: 68px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 24px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .stat-sub {
+            font-size: 18px;
+            color: var(--text-dim);
+            margin-top: 6px;
+        }
+
+        /* 3 Columns CTA */
+        .grid-3col {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 25px;
+            flex-grow: 1;
+            margin: 25px 0;
+        }
+
+        .col-card {
+            background-color: var(--card-bg);
+            border: 2px solid var(--card-border);
+            padding: 30px 25px;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .col-badge {
+            display: inline-block;
+            background-color: #D8DCB8;
+            color: var(--accent-color);
+            font-size: 16px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 3px;
+            margin-bottom: 15px;
+            align-self: flex-start;
+        }
+
+        .col-title {
+            font-family: var(--font-serif);
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .col-desc {
+            font-size: 18px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            flex-grow: 1;
+        }
+
+        .col-link {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-color);
+            border-top: 1px solid var(--card-border);
+            padding-top: 12px;
+            margin-top: 15px;
+        }
+
+        /* Footer */
+        .slide-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 20px;
+            color: var(--text-dim);
+            border-top: 1px solid #D0D3B0;
+            padding-top: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SLIDE 1: COVER -->
+    <div class="social-slide social-slide-1" id="slide-1">
+        <div class="slide-header">
+            <div class="header-left">
+                <div class="category-tag">EDITORIAL DIGEST</div>
+                <div class="slide-title">THIS WEEK IN BITCOIN CORE</div>
+                <div class="slide-title-underline"></div>
+                <div class="slide-subtitle" id="cover-date-range">Weekly Digest Edition</div>
+            </div>
+            <div class="logo-box">
+                <img src="images/favicon.png" onerror="this.src='https://bitcoindatalabs.org/favicon.png'" alt="BDL Logo">
+            </div>
+        </div>
+
+        <div class="hero-container">
+            <span class="quote-mark">“</span>
+            <div class="hero-quote-text" id="cover-tldr">
+                Ongoing research into future protocol evolution, Post-Quantum Cryptography output types, and multi-party signing workflows.
+            </div>
+            <div class="hero-subtext">
+                Complete pull request breakdowns, maintainer reviews, and developer discussions across Bitcoin Core.
+            </div>
+        </div>
+
+        <div class="slide-footer">
+            <span>Weekly Digest • twib.bitcoindatalabs.org</span>
+            <span>Bitcoin Data Labs</span>
+        </div>
+    </div>
+
+    <!-- SLIDE 2: VITAL SIGNS -->
+    <div class="social-slide social-slide-2" id="slide-2">
+        <div class="slide-header">
+            <div class="header-left">
+                <div class="category-tag">WEEKLY VELOCITY</div>
+                <div class="slide-title">DEV VITAL SIGNS</div>
+                <div class="slide-title-underline"></div>
+                <div class="slide-subtitle" id="vital-date-range">Bitcoin Core Development Metrics</div>
+            </div>
+            <div class="logo-box">
+                <img src="images/favicon.png" onerror="this.src='https://bitcoindatalabs.org/favicon.png'" alt="BDL Logo">
+            </div>
+        </div>
+
+        <div class="grid-2x2">
+            <div class="stat-card">
+                <div class="stat-value" id="val-merged">47</div>
+                <div class="stat-label">Pull Requests Merged</div>
+                <div class="stat-sub">Across consensus, wallet, p2p, and build</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="val-reviews">662</div>
+                <div class="stat-label">Review Comments</div>
+                <div class="stat-sub">Thorough peer verification by maintainers & contributors</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="val-discussions">14</div>
+                <div class="stat-label">Active Research Threads</div>
+                <div class="stat-sub">On Delving Bitcoin & Bitcoin-Dev mailing list</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="val-contributors">+5</div>
+                <div class="stat-label">New Contributors</div>
+                <div class="stat-sub">Expanding the open-source developer pipeline</div>
+            </div>
+        </div>
+
+        <div class="slide-footer">
+            <span>Data source: orange-dev-tracker telemetry</span>
+            <span>twib.bitcoindatalabs.org</span>
+        </div>
+    </div>
+
+    <!-- SLIDE 3: SPOTLIGHT PR -->
+    <div class="social-slide social-slide-3" id="slide-3">
+        <div class="slide-header">
+            <div class="header-left">
+                <div class="category-tag">FEATURED MERGE</div>
+                <div class="slide-title">SPOTLIGHT PR</div>
+                <div class="slide-title-underline"></div>
+                <div class="slide-subtitle" id="spotlight-domain">Security & Consensus Milestone</div>
+            </div>
+            <div class="logo-box">
+                <img src="images/favicon.png" onerror="this.src='https://bitcoindatalabs.org/favicon.png'" alt="BDL Logo">
+            </div>
+        </div>
+
+        <div class="hero-container">
+            <div style="font-size: 20px; font-weight: 700; color: var(--accent-color); margin-bottom: 10px;" id="spotlight-author">
+                PR #34374 • Pieter Wuille
+            </div>
+            <div class="hero-quote-text" style="font-size: 32px; font-weight: 700; margin-bottom: 15px;" id="spotlight-title">
+                Kernel Working Group: Refactor and Call for Reviews
+            </div>
+            <div class="hero-subtext" id="spotlight-summary">
+                Significant architectural progress separating core validation logic into an independent reusable library, paving the way for safer protocol integration.
+            </div>
+        </div>
+
+        <div class="slide-footer">
+            <span>Detailed review breakdowns at twib.bitcoindatalabs.org</span>
+            <span>Bitcoin Data Labs</span>
+        </div>
+    </div>
+
+    <!-- SLIDE 4: PROTOCOL DISCUSSIONS -->
+    <div class="social-slide social-slide-4" id="slide-4">
+        <div class="slide-header">
+            <div class="header-left">
+                <div class="category-tag">RESEARCH & DISCUSSIONS</div>
+                <div class="slide-title">PROTOCOL DEBATES</div>
+                <div class="slide-title-underline"></div>
+                <div class="slide-subtitle">Delving Bitcoin & Core Dev Meeting</div>
+            </div>
+            <div class="logo-box">
+                <img src="images/favicon.png" onerror="this.src='https://bitcoindatalabs.org/favicon.png'" alt="BDL Logo">
+            </div>
+        </div>
+
+        <div class="grid-2x2">
+            <div class="stat-card" style="padding: 25px 30px;">
+                <div class="col-badge">SECURITY</div>
+                <div style="font-size: 22px; font-weight: 700; margin: 8px 0; color: var(--text-primary);">Post-Quantum Cryptography</div>
+                <div style="font-size: 17px; color: var(--text-secondary); line-height: 1.35;">Active evaluation of future-proof output types and quantum migration schemes.</div>
+            </div>
+            <div class="stat-card" style="padding: 25px 30px;">
+                <div class="col-badge">SCALABILITY</div>
+                <div style="font-size: 22px; font-weight: 700; margin: 8px 0; color: var(--text-primary);">SNARK Block Aggregation</div>
+                <div style="font-size: 17px; color: var(--text-secondary); line-height: 1.35;">Exploring signature aggregation across whole blocks to compress transaction verification data.</div>
+            </div>
+            <div class="stat-card" style="padding: 25px 30px;">
+                <div class="col-badge">WALLET TECH</div>
+                <div style="font-size: 22px; font-weight: 700; margin: 8px 0; color: var(--text-primary);">Miniscript & Descriptors</div>
+                <div style="font-size: 17px; color: var(--text-secondary); line-height: 1.35;">Refinements in how complex script expressions and validatable Descriptor IDs are parsed.</div>
+            </div>
+            <div class="stat-card" style="padding: 25px 30px;">
+                <div class="col-badge">GUI & QML</div>
+                <div style="font-size: 22px; font-weight: 700; margin: 8px 0; color: var(--text-primary);">QML Desktop Interface</div>
+                <div style="font-size: 17px; color: var(--text-secondary); line-height: 1.35;">Working group progress modernizing Bitcoin Core's desktop GUI and privacy broadcast boundaries.</div>
+            </div>
+        </div>
+
+        <div class="slide-footer">
+            <span>Read meeting debriefs at twib.bitcoindatalabs.org/meetings.html</span>
+            <span>Bitcoin Data Labs</span>
+        </div>
+    </div>
+
+    <!-- SLIDE 5: CTA -->
+    <div class="social-slide social-slide-5" id="slide-5">
+        <div class="slide-header">
+            <div class="header-left">
+                <div class="category-tag">BITCOIN DATA LABS</div>
+                <div class="slide-title">READ THE FULL DIGEST</div>
+                <div class="slide-title-underline"></div>
+                <div class="slide-subtitle">Independent • Verifiable • Open-Source Research</div>
+            </div>
+            <div class="logo-box">
+                <img src="images/favicon.png" onerror="this.src='https://bitcoindatalabs.org/favicon.png'" alt="BDL Logo">
+            </div>
+        </div>
+
+        <div class="grid-3col">
+            <div class="col-card">
+                <div class="col-badge">EDITORIAL</div>
+                <div class="col-title">This Week in Bitcoin</div>
+                <div class="col-desc">Weekly summaries of all merged PRs, meeting notes, and technical discussions across Bitcoin Core.</div>
+                <div class="col-link">twib.bitcoindatalabs.org</div>
+            </div>
+            <div class="col-card">
+                <div class="col-badge">ANALYTICS</div>
+                <div class="col-title">Orange Dev Tracker</div>
+                <div class="col-desc">Interactive developer pipeline, bus factor, review velocity, and 15+ years of protocol history.</div>
+                <div class="col-link">tracker.bitcoindatalabs.org</div>
+            </div>
+            <div class="col-card">
+                <div class="col-badge">TOPOLOGY</div>
+                <div class="col-title">PlebDashboard LN</div>
+                <div class="col-desc">Lightning Network rankings, PlebRank, routing centrality, and 3D visual graph topology.</div>
+                <div class="col-link">plebdashboard-ln</div>
+            </div>
+        </div>
+
+        <div class="slide-footer">
+            <span>Published every Sunday • Follow @BitcoinDataLabs</span>
+            <span>bitcoindatalabs.org</span>
+        </div>
+    </div>
+
+    <script>
+        // Load data dynamically
+        async function initCards() {
+            try {
+                const candidates = [
+                    'data/latest.json',
+                    'output/twib/data/latest.json',
+                    '../../orange-dev-data/output/twib/data/latest.json',
+                    'https://raw.githubusercontent.com/sorukumar/orange-dev-data/main/output/twib/data/latest.json'
+                ];
+
+                let data = null;
+                for (const url of candidates) {
+                    try {
+                        const res = await fetch(url);
+                        if (res.ok) {
+                            data = await res.json();
+                            break;
+                        }
+                    } catch(e) {}
+                }
+
+                if (data) {
+                    const start = data.start_date || '';
+                    const end = data.end_date || '';
+                    const dateStr = (start && end) ? `${start} – ${end}` : 'Latest Edition';
+                    
+                    document.getElementById('cover-date-range').textContent = dateStr;
+                    document.getElementById('vital-date-range').textContent = `Coverage: ${dateStr}`;
+
+                    if (data.tldr && data.tldr.length > 0) {
+                        document.getElementById('cover-tldr').textContent = data.tldr[0];
+                    }
+
+                    const stats = data.stats || {};
+                    if (stats.total_merged) document.getElementById('val-merged').textContent = stats.total_merged;
+                    if (stats.total_reviews) document.getElementById('val-reviews').textContent = stats.total_reviews;
+                    if (stats.total_threads) document.getElementById('val-threads').textContent = stats.total_threads;
+                    if (stats.new_contributors !== undefined) document.getElementById('val-contributors').textContent = '+' + stats.new_contributors;
+
+                    // Spotlight PR
+                    if (data.categories && data.categories.merged) {
+                        for (const cat of data.categories.merged) {
+                            if (cat.prs && cat.prs.length > 0) {
+                                const pr = cat.prs[0];
+                                document.getElementById('spotlight-domain').textContent = cat.name + ' Milestone';
+                                document.getElementById('spotlight-author').textContent = `PR #${pr.pr_number || ''} • ${pr.author || 'Contributor'}`;
+                                document.getElementById('spotlight-title').textContent = pr.title || '';
+                                if (pr.summary) document.getElementById('spotlight-summary').textContent = pr.summary;
+                                break;
+                            }
+                        }
+                    }
+                }
+            } catch(e) {
+                console.warn('Could not fetch latest.json, using fallback editorial content:', e);
+            } finally {
+                document.body.setAttribute('data-loaded', 'true');
+            }
+        }
+        window.addEventListener('DOMContentLoaded', initCards);
+    </script>
+</body>
+</html>
