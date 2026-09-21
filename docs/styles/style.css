@@ -281,6 +281,24 @@ ul.tldr-list li:first-child {
     transform: translateY(-1px);
 }
 
+.meeting-archive-link {
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent-color-text);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.meeting-archive-link:hover {
+    color: #A54B25;
+    text-decoration: underline;
+    transform: translateX(2px);
+}
+
 .pr-meta {
     font-family: var(--font-sans);
     font-size: 0.8rem;
@@ -950,10 +968,6 @@ select {
     text-decoration: underline;
 }
 
-.spotlight-cta-container {
-    margin-top: 1.2rem;
-    text-align: right;
-}
 
 /* ==========================================================================
    UX Delighters: Micro-Interactions & Keyboard Hints

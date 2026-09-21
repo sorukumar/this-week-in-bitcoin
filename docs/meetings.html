@@ -102,9 +102,9 @@
     <script src="js/app-config.js"></script>
 
     <script>
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         const DATA_BASE = isLocal
-            ? 'output/twib/data/'
+            ? '../../orange-dev-data/output/twib/data/'
             : 'https://raw.githubusercontent.com/sorukumar/orange-dev-data/main/output/twib/data/';
 
         let allMeetings = [];
@@ -143,7 +143,7 @@
                             targetEl.classList.add('highlighted');
                         }
                     }, 200);
-                } else if (allMeetings.length > 0) {
+                } else if (allMeetings.length > 0 && document.getElementById('mcard-date')) {
                     populateSocialCard(allMeetings[0]);
                 }
                 document.body.setAttribute('data-card-ready', 'true');
@@ -212,38 +212,48 @@
         function populateSocialCard(meeting) {
             if (!meeting) return;
             const dateStr = formatDate(meeting.date);
-            document.getElementById('mcard-date').textContent = dateStr;
-            document.getElementById('mcard-participants').textContent = `${meeting.participant_count || 0} Contributors`;
+            const dateEl = document.getElementById('mcard-date');
+            if (dateEl) dateEl.textContent = dateStr;
+
+            const partEl = document.getElementById('mcard-participants');
+            if (partEl) partEl.textContent = `${meeting.participant_count || 0} Contributors`;
             
             const decisions = meeting.decisions_made || [];
-            document.getElementById('mcard-decisions-count').textContent = `${decisions.length} Decisions`;
+            const decCountEl = document.getElementById('mcard-decisions-count');
+            if (decCountEl) decCountEl.textContent = `${decisions.length} Decisions`;
             
             // Topics
             const topics = meeting.topics_discussed || [];
             const topicsEl = document.getElementById('mcard-topics');
-            if (topics.length > 0) {
-                topicsEl.innerHTML = topics.slice(0, 3).map(t => `<li>${t}</li>`).join('');
-            } else {
-                topicsEl.innerHTML = '<li>General codebase maintenance and review status sync.</li>';
+            if (topicsEl) {
+                if (topics.length > 0) {
+                    topicsEl.innerHTML = topics.slice(0, 3).map(t => `<li>${t}</li>`).join('');
+                } else {
+                    topicsEl.innerHTML = '<li>General codebase maintenance and review status sync.</li>';
+                }
             }
 
             // Decisions Quote
             const decisionEl = document.getElementById('mcard-decision-text');
-            if (decisions.length > 0) {
-                decisionEl.textContent = `"${decisions[0]}"`;
-            } else if (meeting.headline_verdict) {
-                decisionEl.textContent = `"${meeting.headline_verdict}"`;
-            } else {
-                decisionEl.textContent = '"Focus on review velocity and test stabilization."';
+            if (decisionEl) {
+                if (decisions.length > 0) {
+                    decisionEl.textContent = `"${decisions[0]}"`;
+                } else if (meeting.headline_verdict) {
+                    decisionEl.textContent = `"${meeting.headline_verdict}"`;
+                } else {
+                    decisionEl.textContent = '"Focus on review velocity and test stabilization."';
+                }
             }
 
             // PRs
             const prs = meeting.mentioned_prs || [];
             const prsEl = document.getElementById('mcard-prs');
-            if (prs.length > 0) {
-                prsEl.innerHTML = prs.slice(0, 6).map(pr => `<span class="pr-badge">PR #${pr}</span>`).join('');
-            } else {
-                prsEl.innerHTML = '<span class="pr-badge">General Topics</span>';
+            if (prsEl) {
+                if (prs.length > 0) {
+                    prsEl.innerHTML = prs.slice(0, 6).map(pr => `<span class="pr-badge">PR #${pr}</span>`).join('');
+                } else {
+                    prsEl.innerHTML = '<span class="pr-badge">General Topics</span>';
+                }
             }
 
             const permalinkEl = document.getElementById('mcard-permalink-text');
